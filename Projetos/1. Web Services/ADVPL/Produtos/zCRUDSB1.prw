@@ -5,9 +5,11 @@
 #INCLUDE "RWMAKE.CH"
 #INCLUDE "TBICONN.CH"
 
-#DEFINE WSCODE_OK    		200
+#DEFINE WSCODE_OK    			200
 
-#DEFINE TYPE_FORM_RETWS		"cp1252"
+#DEFINE TYPE_FORM_RETWS			"cp1252"
+#DEFINE MODEL_OPERATION_INSERT	3
+#DEFINE MODEL_OPERATION_UPDATE	4
 
 
 /*/{Protheus.doc} ZCrudSB1
@@ -35,16 +37,156 @@ WSRESTFUL zCRUDSB1 DESCRIPTION "Web Service Rest Produtos(SB1)" FORMAT APPLICATI
 
 	WSMETHOD POST;
 		DESCRIPTION "Inserção tabela Produtos(SB1) via MATA010";
-		WSSYNTAX "" //Não possibilita utilizar outro GET
+		WSSYNTAX "/zCRUDSB1"
+
+	WSMETHOD PUT;
+		DESCRIPTION "Alteração tabela Produtos(SB1) via MATA010";
+		WSSYNTAX "/zCRUD'SB1
 
 END WSRESTFUL
+
+//-------------------------------------------------------------------
+/*/{Protheus.doc} PUT
+POST no modelo antigo WSSYNTAX que não valida agrupamentos e nem path
+
+@author Cristian Gustavo
+@since 26/07/2025
+/*/
+//-------------------------------------------------------------------
+WSMETHOD PUT WSSERVICE zCRUDSB1
+
+	Local aResponse	 as Array
+	Local jResponse  as Object
+	Local oRequest   as Object
+	Local oResponse  as Object
+	Local lRetWS	 as Logical
+	Local cMsgRet	 as Character
+
+	Local oModel     as Object
+	Local oSB1Mod    as Object
+
+	aResponse   := {}
+	jResponse   := JsonObject():New()
+	oRequest    := JsonObject():New()
+	oResponse   := JsonObject():New()
+
+	lRetWS		:=	oRequest:FromJson(::GetContent()) // Self:GetContent() | Pega a string do JSON
+	cMsgRet		:= ''
+
+	oModel 		:= NIL
+	oSB1Mod		:= NIL
+
+	IF ValType(lRetWS) == 'U'
+
+		If !Empty(AllTrim(oRequest['B1_COD']))
+			DBSelectArea("SB1")
+			SB1->(DbSetOrder(1))
+			If SB1->(DbSeek(xFilial("SB1") + AllTrim(oRequest['B1_COD'])))
+
+				//Pegando o modelo de dados, setando a operação de inclusão
+				oModel := FWLoadModel("MATA010")
+				oModel:SetOperation(MODEL_OPERATION_UPDATE) //Alteração
+				oModel:Activate()
+
+				//Pegando o model e setando os campos
+				oSB1Mod := oModel:GetModel("SB1MASTER")
+				oSB1Mod:SetValue("B1_DESC",   AllTrim(oRequest['B1_DESC']))
+				oSB1Mod:SetValue("B1_TIPO",   AllTrim(oRequest['B1_TIPO']))
+				oSB1Mod:SetValue("B1_UM",     AllTrim(oRequest['B1_UM']))
+				oSB1Mod:SetValue("B1_LOCPAD", AllTrim(oRequest['B1_LOCPAD']))
+
+				If !Empty(AllTrim(oRequest['B5_CEME']))
+					DBSelectArea("SB5")
+					SB5->(DbSetOrder(1))
+					If SB5->(DbSeek(xFilial("SB5") + AllTrim(oRequest['B1_COD'])))
+						oSB5Mod := oModel:GetModel("SB5DETAIL")
+						If oSB5Mod != Nil
+							oSB5Mod:SetValue("B5_CEME", AllTrim(oRequest['B5_CEME']))
+						EndIf
+					EndIf
+				EndIf
+
+				//Se conseguir validar as informações
+				If oModel:VldData()
+					//Tenta realizar o Commit
+					If oModel:CommitData()
+						lOk := .T.
+					Else
+						lOk := .F.
+						cMsgRet += "Erro na alteração via CommitData, necessário verificar." + Chr(13) + Chr(10)
+					EndIf
+				Else //Se não conseguir validar as informações, altera a variável para false
+					lOk := .F.
+					cMsgRet += "Erro na validação das informações via CommitData, necessário verificar." + Chr(13) + Chr(10)
+				EndIf
+
+				//Se não deu certo a inclusão, mostra a mensagem de erro
+				If !lOk
+					aErro := oModel:GetErrorMessage() //Busca o Erro do Modelo de Dados
+
+					/*cMsgRet := "Id do formulário de origem:"  + ' [' + cValToChar(aErro[01]) + '], '
+					cMsgRet += "Id do campo de origem: "      + ' [' + cValToChar(aErro[02]) + '], '
+					cMsgRet += "Id do formulário de erro: "   + ' [' + cValToChar(aErro[03]) + '], '
+					cMsgRet += "Id do campo de erro: "        + ' [' + cValToChar(aErro[04]) + '], '
+					cMsgRet += "Id do erro: "                 + ' [' + cValToChar(aErro[05]) + '], '
+					cMsgRet += "Mensagem da solução: "        + ' [' + cValToChar(aErro[07]) + '], '
+					cMsgRet += "Valor atribuído: "            + ' [' + cValToChar(aErro[08]) + '], '
+					cMsgRet += "Valor anterior: "             + ' [' + cValToChar(aErro[09]) + ']'*/
+
+					cMsgRet += "Mensagem do erro: " + AllTrim(cValToChar(aErro[06])) + Chr(13) + Chr(10)
+
+					lRet := .F.
+					Endif
+			Else
+        	    lOk := .F.
+        	    cMsgRet += "Produto não encontrado para alteração." + Chr(13) + Chr(10)
+        	EndIf
+		Else
+        	lOk := .F.
+			cMsgRet	:= 'Campo: B1_COD' + ' não informado no corpo da requisição!'
+		EndIf
+
+		//Desativa o modelo de dados
+		If oModel <> Nil
+    		oModel:DeActivate()
+		EndIf
+
+		//Se não encontrar registros
+		If lOk
+			oResponse['mensage']	:= ENCODEUTF8(;
+				'Registro: ' + AllTrim(oRequest['B1_COD']) + " - " + AllTrim(oRequest['B1_DESC']) + ;
+				' alterado com sucesso!', TYPE_FORM_RETWS)
+		Else	
+			oResponse['mensage']	:= ENCODEUTF8(cMsgRet, TYPE_FORM_RETWS)
+		EndIf
+	Else
+		oResponse['mensage']	:= ENCODEUTF8(;
+			'Corpo da requisição fora do padrão JSON',;
+			TYPE_FORM_RETWS)
+	EndIf
+
+	IF oResponse <> NIL
+		Aadd(aResponse, oResponse)
+
+		/*Liberação objetos JSON*/
+		FreeObj(oResponse)
+	ENDIF
+
+	// define o tipo de retorno do método
+	//::SetContentType("application/json")
+	Self:SetContentType("application/json")
+	//Self:SetResponse(jResponse:toJSON())
+	Self:SetResponse(aResponse)
+	Self:SetStatus(WSCODE_OK)
+
+Return .T.
 
 //-------------------------------------------------------------------
 /*/{Protheus.doc} POST
 POST no modelo antigo WSSYNTAX que não valida agrupamentos e nem path
 
 @author Cristian Gustavo
-@since 05/09/2018
+@since 26/07/2025
 /*/
 //-------------------------------------------------------------------
 WSMETHOD POST WSSERVICE zCRUDSB1
@@ -73,7 +215,7 @@ WSMETHOD POST WSSERVICE zCRUDSB1
 	IF ValType(lRetWS) == 'U'
 		//Pegando o modelo de dados, setando a operação de inclusão
 		oModel := FWLoadModel("MATA010")
-		oModel:SetOperation(3) //Inclusão
+		oModel:SetOperation(MODEL_OPERATION_INSERT) //Inclusão
 		oModel:Activate()
 
 		//Pegando o model e setando os campos
@@ -125,7 +267,9 @@ WSMETHOD POST WSSERVICE zCRUDSB1
 		EndIf
 
 		//Desativa o modelo de dados
-		oModel:DeActivate()
+		If oModel <> Nil
+    		oModel:DeActivate()
+		EndIf
 
 		//Se não encontrar registros
 		If lOk
@@ -163,7 +307,7 @@ Return .T.
 Get no modelo antigo WSSYNTAX que não valida agrupamentos e nem path
 
 @author Cristian Gustavo
-@since 05/09/2018
+@since 26/07/2025
 /*/
 //-------------------------------------------------------------------
 WSMETHOD GET WSRECEIVE nPage, nPageSize WSSERVICE zCRUDSB1
