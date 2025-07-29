@@ -12,7 +12,6 @@
 #DEFINE MODEL_OPERATION_UPDATE	4
 #DEFINE MODEL_OPERATION_DELETE	5
 
-
 /*/{Protheus.doc} ZCrudSB1
     (long_description)
     @type  Function
@@ -28,7 +27,7 @@
 /*/
 WSRESTFUL zCRUDSB1 DESCRIPTION "Web Service Rest Produtos(SB1)" FORMAT APPLICATION_JSON
 
-	WSDATA B1_COD   AS CHARACTER OPTIONAL
+	WSDATA B1_COD    AS CHARACTER OPTIONAL
 	WSDATA nPageSize AS INTEGER OPTIONAL
 	WSDATA nPage     AS INTEGER OPTIONAL
 
@@ -52,7 +51,7 @@ END WSRESTFUL
 
 //-------------------------------------------------------------------
 /*/{Protheus.doc} DELETE
-Delete no modelo antigo WSSYNTAX que não valida agrupamentos e nem path
+DELETE no modelo antigo WSSYNTAX que valida requisição via path
 
 @author Cristian Gustavo
 @since 26/07/2025
@@ -61,24 +60,26 @@ Delete no modelo antigo WSSYNTAX que não valida agrupamentos e nem path
 WSMETHOD DELETE WSSERVICE zCRUDSB1
 
 	Local aResponse	 as Array
+	Local cCodSB1 	 as Character
+	Local cMsgRet	 as Character
+
 	Local jResponse  as Object
 	Local oResponse  as Object
 	Local oModel     as Object
 
-	Local cCodSB1 	 as Character
 	Local lRetWS	 as Logical
 	Local lOk		 as Logical
-	Local cMsgRet	 as Character
 
 	aResponse   := {}
 	cCodSB1		:= ''
-	jResponse   := JsonObject():New()
-	oResponse   := JsonObject():New()
-	lRetWS		:= .T.
-	lOk			:= .T.
 	cMsgRet 	:= ''
 
+	jResponse   := JsonObject():New()
+	oResponse   := JsonObject():New()
 	oModel      := NIL
+
+	lRetWS		:= .T.
+	lOk			:= .T.
 
 	// verifica se recebeu parametro pela URL
 	// exemplo: http://localhost:8080/zCRUDSB1/000001
@@ -176,7 +177,7 @@ Return .T.
 
 //-------------------------------------------------------------------
 /*/{Protheus.doc} PUT
-POST no modelo antigo WSSYNTAX que não valida agrupamentos e nem path
+PUT no modelo antigo WSSYNTAX que valida corpo da requisição via JSON
 
 @author Cristian Gustavo
 @since 26/07/2025
@@ -312,7 +313,7 @@ Return .T.
 
 //-------------------------------------------------------------------
 /*/{Protheus.doc} POST
-POST no modelo antigo WSSYNTAX que não valida agrupamentos e nem path
+POST no modelo antigo WSSYNTAX que valida corpo da requisição via JSON
 
 @author Cristian Gustavo
 @since 26/07/2025
@@ -321,22 +322,25 @@ POST no modelo antigo WSSYNTAX que não valida agrupamentos e nem path
 WSMETHOD POST WSSERVICE zCRUDSB1
 
 	Local aResponse	 as Array
+	Local cMsgRet	 as Character
+
 	Local jResponse  as Object
 	Local oRequest   as Object
 	Local oResponse  as Object
+
 	Local lRetWS	 as Logical
-	Local cMsgRet	 as Character
 
 	Local oModel     as Object
 	Local oSB1Mod    as Object
 
 	aResponse   := {}
+	cMsgRet		:= ''
+
 	jResponse   := JsonObject():New()
 	oRequest    := JsonObject():New()
 	oResponse   := JsonObject():New()
 
 	lRetWS		:=	oRequest:FromJson(::GetContent()) // Self:GetContent() | Pega a string do JSON
-	cMsgRet		:= ''
 
 	oModel 		:= NIL
 	oSB1Mod		:= NIL
@@ -432,8 +436,8 @@ Return .T.
 
 
 //-------------------------------------------------------------------
-/*/{Protheus.doc} POST
-Get no modelo antigo WSSYNTAX que não valida agrupamentos e nem path
+/*/{Protheus.doc} GET
+Get no modelo antigo WSSYNTAX que valida agrupamentos e path
 
 @author Cristian Gustavo
 @since 26/07/2025
@@ -442,26 +446,32 @@ Get no modelo antigo WSSYNTAX que não valida agrupamentos e nem path
 WSMETHOD GET WSRECEIVE nPage, nPageSize WSSERVICE zCRUDSB1
 
 	Local aResponse	 as Array
-	Local nI         as Numeric
-	Local nCount     as Numeric
-	Local jResponse  as Object
-	Local oResponse  as Object
-	Local cAlias 	 as Character
-	Local cWhere 	 as Character
 	Local lRetWS	 as Logical
 
+	Local nI         as Numeric
+	Local nCount     as Numeric
 	Local nStart   	 as Numeric
+
+	Local jResponse  as Object
+	Local oResponse  as Object
+
+	Local cAlias 	 as Character
+	Local cWhere 	 as Character
 
 	DEFAULT ::nPage := 1, ::nPageSize := 5
 
 	aResponse   := {}
+	lRetWS		:= .T.
+
 	nI          := 0
 	nCount      := 0
+
 	jResponse   := JsonObject():New()
 	oResponse   := JsonObject():New()
+
 	cAlias 		:= GetNextAlias()
 	cWhere 		:= '%%'
-	lRetWS		:= .T.
+
 	nStart   	:= (::nPage - 1) * ::nPageSize
 
 	// verifica se recebeu parametro pela URL
