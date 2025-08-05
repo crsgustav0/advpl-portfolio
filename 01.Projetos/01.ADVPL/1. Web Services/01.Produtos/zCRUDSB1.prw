@@ -532,7 +532,7 @@ WSMETHOD GET WSRECEIVE nPage, nPageSize WSSERVICE zCRUDSB1
 				oResponse['B1_TIPO'] := AllTrim((cAlias)->B1_TIPO)
 				oResponse['B1_UM'] := AllTrim((cAlias)->B1_UM)
 				oResponse['B1_LOCPAD'] := AllTrim((cAlias)->B1_LOCPAD)
-				oResponse['R_E_C_N_O_'] := AllTrim((cAlias)->R_E_C_N_O_)
+				oResponse['R_E_C_N_O_'] := (cAlias)->R_E_C_N_O_
 
 				Aadd(aResponse, oResponse)
 				FreeObj(oResponse)
