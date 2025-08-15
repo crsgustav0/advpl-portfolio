@@ -12,11 +12,11 @@
 #DEFINE MODEL_OPERATION_UPDATE	4
 #DEFINE MODEL_OPERATION_DELETE	5
 
-/*/{Protheus.doc} ZCrudSB1
+/*/{Protheus.doc} ZCrudSA1
     (long_description)
     @type  Function
     @author Cristian Gustavo
-    @since 26/06/2025
+    @since 05/07/2025
     @version 
         1.0 Desenvolvimento inicial rotina
     @param param_name, param_type, param_descr
@@ -25,27 +25,27 @@
     (examples)
     @see (links_or_references)
 /*/
-WSRESTFUL zCRUDSB1 DESCRIPTION "Web Service Rest Produtos(SB1)" FORMAT APPLICATION_JSON
+WSRESTFUL zCRUDSA1 DESCRIPTION "Web Service Rest Clientes(SA1)" FORMAT APPLICATION_JSON
 
-	WSDATA B1_COD    AS CHARACTER OPTIONAL
+	WSDATA A1_COD    AS CHARACTER OPTIONAL
 	WSDATA nPageSize AS INTEGER OPTIONAL
 	WSDATA nPage     AS INTEGER OPTIONAL
 
 	WSMETHOD GET;
-		DESCRIPTION "Consulta tabela Produtos(SB1)";
-		WSSYNTAX "/zCRUDSB1 || /'zCRUDSB1'/{B1_COD}" //Não possibilita utilizar outro GET
+		DESCRIPTION "Consulta tabela Clientes(SA1)";
+		WSSYNTAX "/zCRUDSA1 || /'zCRUDSA1'/{A1_COD}" //Não possibilita utilizar outro GET
 
 	WSMETHOD POST;
-		DESCRIPTION "Inserção tabela Produtos(SB1) via MATA010";
-		WSSYNTAX "/zCRUDSB1"
+		DESCRIPTION "Inserção tabela Clientes(SA1) via MATA030";
+		WSSYNTAX "/zCRUDSA1"
 
 	WSMETHOD PUT;
-		DESCRIPTION "Alteração tabela Produtos(SB1) via MATA010";
-		WSSYNTAX "/zCRUDSB1
+		DESCRIPTION "Alteração tabela Clientes(SA1) via MATA030";
+		WSSYNTAX "/zCRUDSA1
 
 	WSMETHOD DELETE;
-		DESCRIPTION "Deleção tabela Produtos(SB1) via MATA010";
-		WSSYNTAX "/zCRUDSB1 || /'zCRUDSB1'/{B1_COD}"
+		DESCRIPTION "Deleção tabela Clientes(SA1) via MATA030";
+		WSSYNTAX "/zCRUDSA1 || /'zCRUDSA1'/{A1_COD}"
 
 END WSRESTFUL
 
@@ -54,13 +54,13 @@ END WSRESTFUL
 DELETE no modelo antigo WSSYNTAX que valida requisição via path
 
 @author Cristian Gustavo
-@since 26/07/2025
+@since 02/08/2025
 /*/
 //-------------------------------------------------------------------
-WSMETHOD DELETE WSSERVICE zCRUDSB1
+WSMETHOD DELETE WSSERVICE zCRUDSA1
 
 	Local aResponse	 as Array
-	Local cCodSB1 	 as Character
+	Local cCodSA1 	 as Character
 	Local cMsgRet	 as Character
 
 	Local jResponse  as Object
@@ -71,7 +71,7 @@ WSMETHOD DELETE WSSERVICE zCRUDSB1
 	Local lOk		 as Logical
 
 	aResponse   := {}
-	cCodSB1		:= ''
+	cCodSA1		:= ''
 	cMsgRet 	:= ''
 
 	jResponse   := JsonObject():New()
@@ -82,19 +82,19 @@ WSMETHOD DELETE WSSERVICE zCRUDSB1
 	lOk			:= .T.
 
 	// verifica se recebeu parametro pela URL
-	// exemplo: http://localhost:8080/zCRUDSB1/000001
+	// exemplo: http://localhost:8080/zCRUDSA1/000001
 	If Len(::aURLParms) > 0
 
 		IF LEN(::aURLParms[1]) == 6 //Código de busca fixado tamanho 6
-			cCodSB1	:= AllTrim(::aURLParms[1])
+			cCodSA1	:= AllTrim(::aURLParms[1])
 
-			If !Empty(cCodSB1)
-				DBSelectArea("SB1")
-				SB1->(DbSetOrder(1))
-				If SB1->(DbSeek(xFilial("SB1") + cCodSB1))
+			If !Empty(cCodSA1)
+				DBSelectArea("SA1")
+				SA1->(DbSetOrder(1))
+				If SA1->(DbSeek(xFilial("SA1") + cCodSA1))
 
 					//Pegando o modelo de dados, setando a operação de inclusão
-					oModel := FWLoadModel("MATA010")
+					oModel := FWLoadModel("CRMA980")
 					oModel:SetOperation(MODEL_OPERATION_DELETE) //Exclusão
 					oModel:Activate()
 
@@ -129,11 +129,11 @@ WSMETHOD DELETE WSSERVICE zCRUDSB1
 					Endif
 				Else
         		    lOk := .F.
-        		    cMsgRet += "Produto não encontrado para exclusão." + Chr(13) + Chr(10)
+        		    cMsgRet += "Cliente não encontrado para exclusão." + Chr(13) + Chr(10)
         		EndIf
 			Else
         		lOk := .F.
-				cMsgRet	:= 'Campo: B1_COD' + ' não informado no endereço da requisição!'
+				cMsgRet	:= 'Campo: A1_COD' + ' não informado no endereço da requisição!'
 			EndIf
 
 			//Desativa o modelo de dados
@@ -148,13 +148,13 @@ WSMETHOD DELETE WSSERVICE zCRUDSB1
 
 	Else
     	lOk := .F.
-		cMsgRet	:= 'Campo: B1_COD' + ' não informado no endereço da requisição!'
+		cMsgRet	:= 'Campo: A1_COD' + ' não informado no endereço da requisição!'
 	EndIf
 
 	//Se não encontrar registros
 	If lOk
 		oResponse['mensage']	:= ENCODEUTF8(;
-		'Registro: ' + cCodSB1 + ' excluido com sucesso!', TYPE_FORM_RETWS)
+		'Registro: ' + cCodSA1 + ' excluido com sucesso!', TYPE_FORM_RETWS)
 	Else	
 		oResponse['mensage']	:= ENCODEUTF8(cMsgRet, TYPE_FORM_RETWS)
 	EndIf
@@ -180,10 +180,10 @@ Return .T.
 PUT no modelo antigo WSSYNTAX que valida corpo da requisição via JSON
 
 @author Cristian Gustavo
-@since 26/07/2025
+@since 02/08/2025
 /*/
 //-------------------------------------------------------------------
-WSMETHOD PUT WSSERVICE zCRUDSB1
+WSMETHOD PUT WSSERVICE zCRUDSA1
 
 	Local aResponse	 as Array
 	Local jResponse  as Object
@@ -193,7 +193,7 @@ WSMETHOD PUT WSSERVICE zCRUDSB1
 	Local cMsgRet	 as Character
 
 	Local oModel     as Object
-	Local oSB1Mod    as Object
+	Local oSA1Mod    as Object
 
 	aResponse   := {}
 	jResponse   := JsonObject():New()
@@ -204,38 +204,29 @@ WSMETHOD PUT WSSERVICE zCRUDSB1
 	cMsgRet		:= ''
 
 	oModel 		:= NIL
-	oSB1Mod		:= NIL
+	oSA1Mod		:= NIL
 
 	IF ValType(lRetWS) == 'U'
 
-		If !Empty(AllTrim(oRequest['B1_COD']))
-			DBSelectArea("SB1")
-			SB1->(DbSetOrder(1))
-			If SB1->(DbSeek(xFilial("SB1") + AllTrim(oRequest['B1_COD'])))
+		If !Empty(AllTrim(oRequest['A1_COD']))
+			DBSelectArea("SA1")
+			SA1->(DbSetOrder(1))
+			If SA1->(DbSeek(xFilial("SA1") + AllTrim(oRequest['A1_COD'])))
 
 				//Pegando o modelo de dados, setando a operação de inclusão
-				oModel := FWLoadModel("MATA010")
+				oModel := FWLoadModel("CRMA980")
 				oModel:SetOperation(MODEL_OPERATION_UPDATE) //Alteração
 				oModel:Activate()
 
 				//Pegando o model e setando os campos
-				oSB1Mod := oModel:GetModel("SB1MASTER")
-				oSB1Mod:SetValue("B1_DESC",   AllTrim(oRequest['B1_DESC']))
-				oSB1Mod:SetValue("B1_TIPO",   AllTrim(oRequest['B1_TIPO']))
-				oSB1Mod:SetValue("B1_UM",     AllTrim(oRequest['B1_UM']))
-				oSB1Mod:SetValue("B1_LOCPAD", AllTrim(oRequest['B1_LOCPAD']))
-
-				If !Empty(AllTrim(oRequest['B5_CEME']))
-					DBSelectArea("SB5")
-					SB5->(DbSetOrder(1))
-					If SB5->(DbSeek(xFilial("SB5") + AllTrim(oRequest['B1_COD'])))
-						oSB5Mod := oModel:GetModel("SB5DETAIL")
-						If oSB5Mod != Nil
-							oSB5Mod:SetValue("B5_CEME", AllTrim(oRequest['B5_CEME']))
-						EndIf
-					EndIf
-				EndIf
-
+				oSA1Mod := oModel:GetModel("SA1MASTER")
+				oSA1Mod:SetValue("A1_NOME",   AllTrim(oRequest['A1_NOME']))
+				oSA1Mod:SetValue("A1_NREDUZ",   AllTrim(oRequest['A1_NREDUZ']))
+				oSA1Mod:SetValue("A1_END",   AllTrim(oRequest['A1_END']))
+				oSA1Mod:SetValue("A1_TIPO",   AllTrim(oRequest['A1_TIPO']))
+				oSA1Mod:SetValue("A1_EST",   AllTrim(oRequest['A1_EST']))
+				oSA1Mod:SetValue("A1_MUN",   AllTrim(oRequest['A1_MUN']))
+				
 				//Se conseguir validar as informações
 				If oModel:VldData()
 					//Tenta realizar o Commit
@@ -269,11 +260,11 @@ WSMETHOD PUT WSSERVICE zCRUDSB1
 					Endif
 			Else
         	    lOk := .F.
-        	    cMsgRet += "Produto não encontrado para alteração." + Chr(13) + Chr(10)
+        	    cMsgRet += "Cliente não encontrado para alteração." + Chr(13) + Chr(10)
         	EndIf
 		Else
         	lOk := .F.
-			cMsgRet	:= 'Campo: B1_COD' + ' não informado no corpo da requisição!'
+			cMsgRet	:= 'Campo: A1_COD' + ' não informado no corpo da requisição!'
 		EndIf
 
 		//Desativa o modelo de dados
@@ -284,7 +275,7 @@ WSMETHOD PUT WSSERVICE zCRUDSB1
 		//Se não encontrar registros
 		If lOk
 			oResponse['mensage']	:= ENCODEUTF8(;
-				'Registro: ' + AllTrim(oRequest['B1_COD']) + " - " + AllTrim(oRequest['B1_DESC']) + ;
+				'Registro: ' + AllTrim(oRequest['A1_COD']) + " - " + AllTrim(oRequest['A1_NOME']) + ;
 				' alterado com sucesso!', TYPE_FORM_RETWS)
 		Else	
 			oResponse['mensage']	:= ENCODEUTF8(cMsgRet, TYPE_FORM_RETWS)
@@ -316,10 +307,10 @@ Return .T.
 POST no modelo antigo WSSYNTAX que valida corpo da requisição via JSON
 
 @author Cristian Gustavo
-@since 26/07/2025
+@since 02/08/2025
 /*/
 //-------------------------------------------------------------------
-WSMETHOD POST WSSERVICE zCRUDSB1
+WSMETHOD POST WSSERVICE zCRUDSA1
 
 	Local aResponse	 as Array
 	Local cMsgRet	 as Character
@@ -331,7 +322,7 @@ WSMETHOD POST WSSERVICE zCRUDSB1
 	Local lRetWS	 as Logical
 
 	Local oModel     as Object
-	Local oSB1Mod    as Object
+	Local oSA1Mod    as Object
 
 	aResponse   := {}
 	cMsgRet		:= ''
@@ -343,27 +334,24 @@ WSMETHOD POST WSSERVICE zCRUDSB1
 	lRetWS		:=	oRequest:FromJson(::GetContent()) // Self:GetContent() | Pega a string do JSON
 
 	oModel 		:= NIL
-	oSB1Mod		:= NIL
+	oSA1Mod		:= NIL
 
 	IF ValType(lRetWS) == 'U'
 		//Pegando o modelo de dados, setando a operação de inclusão
-		oModel := FWLoadModel("MATA010")
+		oModel := FWLoadModel("CRMA980")
 		oModel:SetOperation(MODEL_OPERATION_INSERT) //Inclusão
 		oModel:Activate()
 
 		//Pegando o model e setando os campos
-		oSB1Mod := oModel:GetModel("SB1MASTER")
-		oSB1Mod:SetValue("B1_COD",    AllTrim(oRequest['B1_COD']))
-		oSB1Mod:SetValue("B1_DESC",   AllTrim(oRequest['B1_DESC']))
-		oSB1Mod:SetValue("B1_TIPO",   AllTrim(oRequest['B1_TIPO']))
-		oSB1Mod:SetValue("B1_UM",     AllTrim(oRequest['B1_UM']))
-		oSB1Mod:SetValue("B1_LOCPAD", AllTrim(oRequest['B1_LOCPAD']))
-
-		//Setando o complemento do produto
-		oSB5Mod := oModel:GetModel("SB5DETAIL")
-		If oSB5Mod != Nil
-			oSB5Mod:SetValue("B5_CEME"   , AllTrim(oRequest['B5_CEME']))
-		EndIf
+		oSA1Mod := oModel:GetModel("SA1MASTER")
+		oSA1Mod:SetValue("A1_COD",    AllTrim(oRequest['A1_COD']))
+		oSA1Mod:SetValue("A1_NOME",   AllTrim(oRequest['A1_NOME']))
+		oSA1Mod:SetValue("A1_LOJA",   AllTrim(oRequest['A1_LOJA']))
+		oSA1Mod:SetValue("A1_NREDUZ", AllTrim(oRequest['A1_NREDUZ']))
+		oSA1Mod:SetValue("A1_END",    AllTrim(oRequest['A1_END']))
+		oSA1Mod:SetValue("A1_TIPO",   AllTrim(oRequest['A1_TIPO']))
+		oSA1Mod:SetValue("A1_EST",    AllTrim(oRequest['A1_EST']))
+		oSA1Mod:SetValue("A1_MUN",    AllTrim(oRequest['A1_MUN']))
 
 		//Se conseguir validar as informações
 		If oModel:VldData()
@@ -407,7 +395,7 @@ WSMETHOD POST WSSERVICE zCRUDSB1
 		//Se não encontrar registros
 		If lOk
 			oResponse['mensage']	:= ENCODEUTF8(;
-				'Registro: ' + AllTrim(oRequest['B1_COD']) + " - " + AllTrim(oRequest['B1_DESC']) + ;
+				'Registro: ' + AllTrim(oRequest['A1_COD']) + " - " + AllTrim(oRequest['A1_NOME']) + ;
 				' inserido com sucesso!', TYPE_FORM_RETWS)
 		Else	
 			oResponse['mensage']	:= ENCODEUTF8(cMsgRet, TYPE_FORM_RETWS)
@@ -440,10 +428,10 @@ Return .T.
 Get no modelo antigo WSSYNTAX que valida agrupamentos e path
 
 @author Cristian Gustavo
-@since 26/07/2025
+@since 02/08/2025
 /*/
 //-------------------------------------------------------------------
-WSMETHOD GET WSRECEIVE nPage, nPageSize WSSERVICE zCRUDSB1
+WSMETHOD GET WSRECEIVE nPage, nPageSize WSSERVICE zCRUDSA1
 
 	Local aResponse	 as Array
 	Local lRetWS	 as Logical
@@ -475,12 +463,12 @@ WSMETHOD GET WSRECEIVE nPage, nPageSize WSSERVICE zCRUDSB1
 	nStart   	:= (::nPage - 1) * ::nPageSize
 
 	// verifica se recebeu parametro pela URL
-	// exemplo: http://localhost:8080/zCRUDSB1/1
+	// exemplo: http://localhost:8080/zCRUDSA1/1
 	If Len(::aURLParms) > 0
 
 		IF LEN(::aURLParms[1]) == 6 //Código de busca fixado tamanho 6
 			cWhere := '%'
-			cWhere += " AND B1_COD = '" + AllTrim(::aURLParms[1]) + "' " //Self:aURLParms[1]
+			cWhere += " AND A1_COD = '" + AllTrim(::aURLParms[1]) + "' " //Self:aURLParms[1]
 			cWhere += '%'
 		ELSE
 			oResponse['mensage']	:= ENCODEUTF8(;
@@ -497,17 +485,18 @@ WSMETHOD GET WSRECEIVE nPage, nPageSize WSSERVICE zCRUDSB1
 		BEGINSQL ALIAS cAlias
 
 	SELECT	
-        B1_FILIAL AS B1_FILIAL,
-        B1_COD AS B1_COD,
-        B1_DESC AS B1_DESC,
-        B1_TIPO AS B1_TIPO,
-		B1_UM AS B1_UM,
-		B1_LOCPAD AS B1_LOCPAD,
+        A1_COD AS A1_COD,
+		A1_LOJA AS A1_LOJA,
+		A1_NREDUZ AS A1_NREDUZ,
+		A1_END AS A1_END,
+		A1_TIPO AS A1_TIPO,
+		A1_EST AS A1_EST,
+		A1_MUN AS A1_MUN,
 		R_E_C_N_O_ AS R_E_C_N_O_
-	FROM %Table:SB1% AS SB1
-	WHERE SB1.%NotDel%
+	FROM %Table:SA1% AS SA1
+	WHERE SA1.%NotDel%
 		%Exp:cWhere%
-	ORDER BY B1_FILIAL, B1_COD 
+	ORDER BY A1_FILIAL, A1_COD, A1_LOJA, A1_NOME
 
 		ENDSQL
 
@@ -526,12 +515,13 @@ WSMETHOD GET WSRECEIVE nPage, nPageSize WSSERVICE zCRUDSB1
 			While !( (cAlias)->(EoF()) ) .And. nCount < ::nPageSize
 				oResponse := JsonObject():New()
 
-				oResponse['B1_FILIAL'] := AllTrim((cAlias)->B1_FILIAL)
-				oResponse['B1_COD'] := AllTrim((cAlias)->B1_COD)
-				oResponse['B1_DESC'] := AllTrim((cAlias)->B1_DESC)
-				oResponse['B1_TIPO'] := AllTrim((cAlias)->B1_TIPO)
-				oResponse['B1_UM'] := AllTrim((cAlias)->B1_UM)
-				oResponse['B1_LOCPAD'] := AllTrim((cAlias)->B1_LOCPAD)
+				oResponse['A1_COD'] := AllTrim((cAlias)->A1_COD)
+				oResponse['A1_LOJA'] := AllTrim((cAlias)->A1_LOJA)
+				oResponse['A1_NREDUZ'] := AllTrim((cAlias)->A1_NREDUZ)
+				oResponse['A1_END'] := AllTrim((cAlias)->A1_END)
+				oResponse['A1_TIPO'] := AllTrim((cAlias)->A1_TIPO)
+				oResponse['A1_EST'] := AllTrim((cAlias)->A1_EST)
+				oResponse['A1_MUN'] := AllTrim((cAlias)->A1_MUN)
 				oResponse['R_E_C_N_O_'] := (cAlias)->R_E_C_N_O_
 
 				Aadd(aResponse, oResponse)
@@ -542,9 +532,9 @@ WSMETHOD GET WSRECEIVE nPage, nPageSize WSSERVICE zCRUDSB1
 			End
 
 			(cAlias)->(DbCloseArea())
-		Else //Retorno vazio consulta SB1
+		Else //Retorno vazio consulta SA1
 			oResponse['mensage']	:= ENCODEUTF8(;
-				'Não há retorno de registros da tabela de Produtos(SB1).',;
+				'Não há retorno de registros da tabela de Clientes(SA1).',;
 				TYPE_FORM_RETWS)
 		EndIf
 
