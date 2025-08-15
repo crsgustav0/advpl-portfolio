@@ -16,7 +16,7 @@
     (long_description)
     @type  Function
     @author Cristian Gustavo
-    @since 26/06/2025
+    @since 05/07/2025
     @version 
         1.0 Desenvolvimento inicial rotina
     @param param_name, param_type, param_descr
@@ -345,7 +345,7 @@ WSMETHOD POST WSSERVICE zCRUDSA1
 		//Pegando o model e setando os campos
 		oSA1Mod := oModel:GetModel("SA1MASTER")
 		oSA1Mod:SetValue("A1_COD",    AllTrim(oRequest['A1_COD']))
-		oSA1Mod:SetValue("A1_NOME",    AllTrim(oRequest['A1_NOME']))
+		oSA1Mod:SetValue("A1_NOME",   AllTrim(oRequest['A1_NOME']))
 		oSA1Mod:SetValue("A1_LOJA",   AllTrim(oRequest['A1_LOJA']))
 		oSA1Mod:SetValue("A1_NREDUZ", AllTrim(oRequest['A1_NREDUZ']))
 		oSA1Mod:SetValue("A1_END",    AllTrim(oRequest['A1_END']))
