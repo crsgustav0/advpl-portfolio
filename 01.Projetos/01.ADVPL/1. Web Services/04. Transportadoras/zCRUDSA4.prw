@@ -96,8 +96,8 @@ WSMETHOD DELETE WSSERVICE zCRUDSA4
 				SA4->(DbSetOrder(1))
 				If SA4->(DbSeek(xFilial("SA4") + cCodSA4))
 					// Define campos obrigatórios para deleção
-					aAdd(aDados, {"A4_COD",    AllTrim(oRequest['A4_COD']), Nil})
-					aAdd(aDados, {"A4_NOME",   AllTrim(oRequest['A4_NOME']), Nil})
+					aAdd(aDados, {"A4_COD",  SA4->A4_COD, Nil})
+					aAdd(aDados, {"A4_NOME", SA4->A4_NOME, Nil})
 
 					// Executa a rotina automática
 					MSExecAuto({|x,y|MATA050(x,y)}, aDados, MODEL_OPERATION_DELETE)
@@ -105,7 +105,7 @@ WSMETHOD DELETE WSSERVICE zCRUDSA4
 					If lMsErroAuto
 						cMsgRet := U_retErro()
 					Else
-						cMsgRet := "Transportadora " + AllTrim(oRequest['A4_COD']) + " - " + AllTrim(oRequest['A4_NOME']) + " excluída com sucesso!"
+						cMsgRet := "Transportadora " + cCodSA4 + " excluída com sucesso!"
 					EndIf
 				Else
 					cMsgRet += "Transportadoras não encontrado para exclusão." + Chr(13) + Chr(10)
