@@ -22,7 +22,7 @@ Este repositório reúne conhecimentos direcionados a negócios do Sistema Protheus
 - **Conclusão**
 - **Exercícios de fixação**
 
-## Relação Rotinas x Tabelas x Documentação
+## Relação Rotinas Cadastro x Tabelas x Documentação
 
 | Rotina                            | Módulo      | Tabela | Rotina  | Doc.                                                                                                                       |
 | --------------------------------- | ----------- | ------ | ------- | -------------------------------------------------------------------------------------------------------------------------- |
@@ -36,6 +36,20 @@ Este repositório reúne conhecimentos direcionados a negócios do Sistema Protheus
 | **Cad. Naturezas Financeiras**    | **Compras** | SED    | FINA010 | [Cad. Naturezas Financeiras ](<01.Compras/02.Cadastros/06.Naturezas Financeiras/Cadastro_NaturezasFinanceiras.md>)         |
 | **Cad. NCM**                      | **Compras** | SYD    | EICA130 | [Cad. NCM](01.Compras/02.Cadastros/07.NCM/Cadastro_NCM.md)                                                                 |
 | **Cad. Motivos de Retorno**       | **Compras** | DHI    | MATA104 | [Cad. Motivos de Retorno](01.Compras/02.Cadastros/08.Motivos%20de%20Retorno/Cadastro_Motivos%20de%20Retorno.md)            |
+
+## Relação Adminstração Rotinas x Tabelas x Documentação
+
+| Rotina                             | Módulo      | Tabela        | Rotina  | Doc.                                                                                                                                           |
+| ---------------------------------- | ----------- | ------------- | ------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Cad. Tabela de Preços**          | **Compras** | AIA, AIB      | COMA010 | [Cad. Tabela de Preços](01.Compras/03.Administração%20de%20Compras/01.Tabela%20de%20Preço/TabelaPreços.md)                                     |
+| **Cad. Tolerância de Recebimento** | **Compras** | AIC           | COMA020 | [Cad. Tolerância de Recebimento](01.Compras/03.Administração%20de%20Compras/02.Tolerancia%20de%20Recebimento/Tolerancia%20de%20Recebimento.md) |
+| **Cad. Entrega por Terceiros**     | **Compras** | CPW, CPX      | COMA010 | [Cad. Entrega por Terceiros](01.Compras/03.Administração%20de%20Compras/03.Entrega%20por%20Terceiros/Entrega%20por%20Terceiros.md)             |
+| **Cad. Solicitantes**              | **Compras** | CPW, CPX, DBK | MATA084 | [Cad. Solicitantes](01.Compras/03.Administração%20de%20Compras/03.Solicitantes/Solicitantes.md)                                                |
+| **Cad. Compradores**               | **Compras** | SY1           | COMA087 | [Cad. Compradores](01.Compras/03.Administração%20de%20Compras/04.Compradores/Compradores.md)                                                   |
+| **Cad. Grupo de Compras**          | **Compras** | SAJ           | COMA086 | [Cad. Grupo de Compras](01.Compras/03.Administração%20de%20Compras/05.Grupo%20de%20Compras/Grupo%20de%20Compras.md)                            |
+| **Cad. Aprovadores**               | **Compras** | SAK           | MATA095 | [Cad. Aprovadores](01.Compras/03.Administração%20de%20Compras/06.Aprovadores/Aprovadores.md)                                                   |
+| **Cad. Perfil de Aprovadores**     | **Compras** | DHL           | COMA210 | [Cad. Perfil de Aprovadores](01.Compras/03.Administração%20de%20Compras/07.Perfil%20de%20Aprovadores/Perfil%20de%20Aprovadores.md)             |
+| **Cad. Grupo de Aprovação**        | **Compras** | SAL           | MATA114 | [Cad. Grupo de Aprovação](01.Compras/03.Administração%20de%20Compras/08.Grupo%20de%20Aprovação/Grupo%20de%20Aprovação.md)                      |
 
 ---
 

@@ -27,7 +27,7 @@ A rotina padrão de Produtos contém as seguintes operações, sendo:
 - **Consulta**
 - **Exclusão**
 
-Em caso de inclusão, deve seguir a regra de preenchimento dos campos obrigatórios, identificados com o **"\*"** em sua descrição.
+Em caso de inclusão, deve seguir a regra de preenchimento dos campos obrigatórios, identificados com o **"/"** em sua descrição.
 
 ![alt text](src/CadastroProdutos_Compras.png)
 
@@ -143,7 +143,7 @@ A rotina padrão de Produtos contém as seguintes operações, sendo:
 - **Consulta**
 - **Exclusão**
 
-Em caso de inclusão, deve seguir a regra de preenchimento dos campos obrigatórios, identificados com o **"\*"** em sua descrição.
+Em caso de inclusão, deve seguir a regra de preenchimento dos campos obrigatórios, identificados com o **"/"** em sua descrição.
 
 ![alt text](src/CadastroGrupoProdutos_Compras.png)
 

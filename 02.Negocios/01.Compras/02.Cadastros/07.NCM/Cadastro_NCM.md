@@ -25,7 +25,7 @@ A rotina padrão de NCM (Nomenclatura Comum do Mercosul) contém as seguintes oper
 - **Consulta**
 - **Exclusão**
 
-Em caso de inclusão, deve seguir a regra de preenchimento dos campos obrigatórios, identificados com o **"\*"** em sua descrição.
+Em caso de inclusão, deve seguir a regra de preenchimento dos campos obrigatórios, identificados com o **"/"** em sua descrição.
 
 ![alt text](src/Campos-CadastroNCM_Compras.png)
 

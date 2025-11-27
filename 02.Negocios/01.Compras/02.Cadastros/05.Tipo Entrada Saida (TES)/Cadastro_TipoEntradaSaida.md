@@ -27,7 +27,7 @@ A rotina padrão de Tipo Entrada Saida (TES) contém as seguintes operações, sendo
 - **Consulta**
 - **Exclusão**
 
-Em caso de inclusão, deve seguir a regra de preenchimento dos campos obrigatórios, identificados com o **"\*"** em sua descrição.
+Em caso de inclusão, deve seguir a regra de preenchimento dos campos obrigatórios, identificados com o **"/"** em sua descrição.
 
 ![alt text](src/CamposCadastroTipoTES_Compras.png)
 

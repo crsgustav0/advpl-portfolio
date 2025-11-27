@@ -25,7 +25,7 @@ A rotina padrão de Condições de Pagamento contém as seguintes operações, sendo:
 - **Consulta**
 - **Exclusão**
 
-Em caso de inclusão, deve seguir a regra de preenchimento dos campos obrigatórios, identificados com o **"\*"** em sua descrição.
+Em caso de inclusão, deve seguir a regra de preenchimento dos campos obrigatórios, identificados com o **"/"** em sua descrição.
 
 ![alt text](src/CamposCadastroCondPagamento_Compras.png)
 

@@ -27,7 +27,7 @@ A rotina padrão de Motivos de Retorno contém as seguintes operações, sendo:
 - **Consulta**
 - **Exclusão**
 
-Em caso de inclusão, deve seguir a regra de preenchimento dos campos obrigatórios, identificados com o **"\*"** em sua descrição.
+Em caso de inclusão, deve seguir a regra de preenchimento dos campos obrigatórios, identificados com o **"/"** em sua descrição.
 
 ![alt text](src/Campos-CadastroMotivoRetorno_Compras.png)
 
