@@ -1,22 +1,22 @@
 # Administração Módulo Compras
 
-**Rotina Cotações**
+**Rotina Pedidos**
 
-O cadastro de Cotações feitas no Protheus é feito via **"Módulo 06 - Compras"**.
+O cadastro de Pedidos feitas no Protheus é feito via **"Módulo 06 - Compras"**.
 
-De forma mais técnica, as informações cadastradas no Protheus é feita pela rotina padrão **MATA110.PRW** e suas informações podem ser encontradas na tabelas **"Tabela de Cotações - SC8"**.
+De forma mais técnica, as informações cadastradas no Protheus é feita pela rotina padrão **MATA110.PRW** e suas informações podem ser encontradas na tabelas **"Tabela de Pedidos - SC8"**.
 
-[SC8 - Cotações | ERP Labs](https://erplabs.com.br/SC8)
+[SC8 - Pedidos | ERP Labs](https://erplabs.com.br/SC8)
 
-# Gera Cotações
+# Gera Pedidos
 
 Rotina Protheus:
 
 ![alt text](src/MATA131.png)
 
-**Obs: A rotina atua com a premissa de que será feitas as Cotações das Solicitações de Compras já cadastradas.**.
+**Obs: A rotina atua com a premissa de que será feitas as Pedidos das Solicitações de Compras já cadastradas.**.
 
-Acesso a rotina de cadastro de Cotações via Módulo Compras:
+Acesso a rotina de cadastro de Pedidos via Módulo Compras:
 
 ![alt text](src/Acesso-Cotacoes_Compras.png)
 
