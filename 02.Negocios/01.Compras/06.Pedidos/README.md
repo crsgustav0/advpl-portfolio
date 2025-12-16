@@ -101,6 +101,14 @@ Após o informe dos parâmetros e execução da rotina, é possível visualisar o item
 
 **Obs: A rotina é relacionada a Alçada de Aprovação, utilizada para aprovação de documentos.**.
 
+De forma mais técnica, as informações cadastradas no Protheus é feita pela rotina padrão **MATA094.PRW**.
+
+Rotina Protheus:
+
+![alt text](src/MATA094.png)
+
+![alt text](src/Acesso-LiberarDocumentos-Compras.png)
+
 Ao abrir a tela é exibida a mensagem que o usuário necessita de estar cadastrado como aprovado.
 
 Registros sinalizados com a legenda vermelha estão como Pendencia de Aprovação pelo Usuário.
