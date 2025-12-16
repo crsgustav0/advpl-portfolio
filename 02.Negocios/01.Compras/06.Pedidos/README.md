@@ -4,21 +4,21 @@
 
 O cadastro de Pedidos feitas no Protheus é feito via **"Módulo 06 - Compras"**.
 
-De forma mais técnica, as informações cadastradas no Protheus é feita pela rotina padrão **MATA110.PRW** e suas informações podem ser encontradas na tabelas **"Tabela de Pedidos - SC8"**.
+De forma mais técnica, as informações cadastradas no Protheus é feita pela rotina padrão **MATA121.PRW** e suas informações podem ser encontradas na tabelas **"Tabela de Pedidos - SC7"**.
 
-[SC8 - Pedidos | ERP Labs](https://erplabs.com.br/SC8)
+[SC7 - Pedidos | ERP Labs](https://erplabs.com.br/SC7)
 
 # Gera Pedidos
 
 Rotina Protheus:
 
-![alt text](src/MATA131.png)
+![alt text](src/MATA121.png)
 
 **Obs: A rotina atua com a premissa de que será feitas as Pedidos das Solicitações de Compras já cadastradas.**.
 
 Acesso a rotina de cadastro de Pedidos via Módulo Compras:
 
-![alt text](src/Acesso-Cotacoes_Compras.png)
+![alt text](src/Acesso-Pedidos_Compras.png)
 
 ## Parâmetros
 
@@ -30,6 +30,7 @@ Necessário informar os parâmetros para retorno de dados, sendo:
 - Moeda
 
 Itens:
+
 - Produto
 - Quantidade
 - Preço Unitário
@@ -44,14 +45,15 @@ Na legenda dos Pedidos de Compras é possível visualizar que os itens sinalizados
 Verde pendente, aguardando Nota de Entrada.
 
 No menu de outras ações é possível encontrar as seguintes opções, sendo:
+
 - Copiar
 - Impressão do Pedido de Compras
 
+![alt text](src/TelaInclusao-Pedidos-Compras.png)
+
 ## Eliminação de Resíduos
 
-
 **Obs: A rotina tem como objetivo a eliminação de resíduos do Pedido de Compras que foi atendido parcialmente e que não será mais utilizado.**.
-
 
 Um registro visualizado na tela de Pedido de Compras está sendo sinalizado com a legenda AMARELA, onde mostra que parte foi atendido via Nota de Entrada.
 
