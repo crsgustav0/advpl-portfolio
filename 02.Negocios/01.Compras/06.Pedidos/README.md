@@ -55,9 +55,15 @@ No menu de outras ações é possível encontrar as seguintes opções, sendo:
 
 **Obs: A rotina tem como objetivo a eliminação de resíduos do Pedido de Compras que foi atendido parcialmente e que não será mais utilizado.**.
 
+De forma mais técnica, as informações cadastradas no Protheus é feita pela rotina padrão **MATA235.PRW**.
+
 Um registro visualizado na tela de Pedido de Compras está sendo sinalizado com a legenda AMARELA, onde mostra que parte foi atendido via Nota de Entrada.
 
-Acessar Eliminar Resíduos.
+Rotina Protheus:
+
+![alt text](src/MATA235.png)
+
+![alt text](src/Acesso-ElimnarResiduos-Compras.png)
 
 Na tela de baixo é exibido os totais.
 
@@ -80,8 +86,16 @@ Necessário informar os parâmetros, sendo:
 - Item Inicial
 - Item Final
 
+![alt text](src/Perguntas-ElimnarResiduos-Compras.png)
+
+![alt text](src/Perguntas2-ElimnarResiduos-Compras.png)
+
+![alt text](src/Perguntas3-ElimnarResiduos-Compras.png)
+
 Após o informe dos parâmetros e execução da rotina, é possível visualisar o item do Pedido de Compras sinalizado com a legenda cinza.
 "Pedido de Compras eliminado por Resíduo."
+
+![alt text](src/Pedido-EliminarResiduos-Compras.png)
 
 ## Liberação de Documentos
 
