@@ -42,7 +42,7 @@ No menu Outras Ações, é possível encontrar as seguintes opções, sendo:
 
 ![alt text](src/OutrasAcoesLegenda_Solitacoes-Compras.pngsrc/OutrasAcoesSolitacoes-Compras.png)
 
-## Observações
+### Observações
 
 - **Unidade Requisição**
 

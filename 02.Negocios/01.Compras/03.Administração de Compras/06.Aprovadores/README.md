@@ -39,7 +39,7 @@ No menu Outras Ações, é possível encontrar as seguintes opções, sendo:
 
 ![alt text](src/ConsultaSaldo-Aprovador_Compras.png)
 
-## Observações
+### Observações
 
 - **Código Usuário**
 

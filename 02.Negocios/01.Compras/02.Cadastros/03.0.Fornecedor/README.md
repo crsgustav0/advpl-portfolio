@@ -45,7 +45,7 @@ Para o módulo do Compras, importantes informações podem ser encontradas na aba *
 
 ---
 
-## Observações
+### Observações
 
 - **Código Município**
 

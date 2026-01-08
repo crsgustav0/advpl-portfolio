@@ -48,7 +48,7 @@ No menu Outras Ações, é possível encontrar as seguintes opções, sendo:
 
 ---
 
-## Observações
+### Observações
 
 - **Exclusão de Produtos**
 
@@ -149,7 +149,7 @@ Em caso de inclusão, deve seguir a regra de preenchimento dos campos obrigatório
 
 ---
 
-## Observações
+### Observações
 
 - **Pic. Padrão**
 

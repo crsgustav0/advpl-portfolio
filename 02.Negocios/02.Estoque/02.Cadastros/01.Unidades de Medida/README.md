@@ -29,7 +29,7 @@ Em caso de inclusão, deve seguir a regra de preenchimento dos campos obrigatório
 
 ![alt text](src/CamposUnidadeMedida-AcessoEstoqueCustos.png)
 
-## Observações
+### Observações
 
 - **Codigo RIEX**
 

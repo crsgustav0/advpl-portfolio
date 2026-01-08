@@ -29,7 +29,7 @@ Em caso de inclusão, deve seguir a regra de preenchimento dos campos obrigatório
 
 ![alt text](src/Campos-Grupo de Compras_Compras.png)
 
-## Observações
+### Observações
 
 - **Código Usuário**
 
