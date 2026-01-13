@@ -4,7 +4,7 @@
 
 O cadastro de Tipos de Movimentação feitas no Protheus é feito via **"Módulo 04 - Estoque/Custos"**.
 
-De forma mais técnica, as informações cadastradas no Protheus é feita pela rotina padrão **MATA230.PRW** e suas informações podem ser encontradas na tabela **"Tipos de Entrada e Saida - SF5"** e **"Amarração TES X Lanc. Apur. - CC7"**
+De forma mais técnica, as informações cadastradas no Protheus é feita pela rotina padrão **MATA230.PRW** e suas informações podem ser encontradas na tabela **"Tipos de Movimentação - SF5"**.
 
 **Obs: A rotina tem como objetivo o cadastro de movimentações de materiais dentro do Estoque. Mov. Interna são definidos pelo Tipo de Movimentação, internas dentro da empresa, diferenciando da TES que são movimentações externas sendo entrada ou saída.**
 
