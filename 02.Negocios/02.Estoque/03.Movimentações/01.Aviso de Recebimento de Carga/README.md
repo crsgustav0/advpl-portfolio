@@ -1,10 +1,8 @@
-# Movimentações Externas -
-
-**Rotina Aviso de Recebimento de Carga - Módulo Compras**
+# Movimentações Externas - **Rotina Aviso de Recebimento de Carga - Módulo Compras**
 
 O cadastro de Aviso de Recebimento de Carga feitas no Protheus é feito via **"Módulo 06 - Compras"**.
 
-De forma mais técnica, as informações cadastradas no Protheus é feita pela rotina padrão **MATA110.PRW** e suas informações podem ser encontradas na tabelas **"Tabela de Aviso de Recebimento de Carga - SC1"**.
+De forma mais técnica, as informações cadastradas no Protheus é feita pela rotina padrão **MATA145.PRW** e suas informações podem ser encontradas na tabelas **"Tabela de Aviso de Recebimento de Carga - SC1"**.
 
 **Obs: A rotina centraliza informações relacionadas a carga dos produtos de um veículo, se referindo a uma única ou mais de um ou mais fornecedores**.
 
