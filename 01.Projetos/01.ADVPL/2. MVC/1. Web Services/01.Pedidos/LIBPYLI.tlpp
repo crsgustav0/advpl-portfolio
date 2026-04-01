@@ -1,0 +1,282 @@
+#Include "Protheus.ch"
+#include "tlpp-object.th"
+#include "msobject.ch"
+#include "totvs.ch"
+#include "tbiconn.ch"
+
+#include 'protheus.ch'
+#include 'parmtype.ch'
+#INCLUDE 'FWMVCDEF.CH'
+
+Static cPrefDef := ''
+
+/*/{Protheus.doc} LibPyli
+    (Classe para consultas de CNPJ com objetico de buscar dados da empresa.)
+    @author Jose Gavetti
+    @since 30/05/2025
+    @version 1.0    
+/*/
+Class LibPyli
+
+	Public data lRetorno                		as Logical
+	Public data cErro                   		as Character
+
+	public Method New()                 		as Object
+	public Method AmbienteAtivo()       		as Logical
+	public Method MostraErro()          		as Character
+	public Method ValidUser(Token)      		as Logical
+	public Method ValidaIE(cInscEst, cUF)    	as Character
+	public Method FsEmpFil(cCompany, cBranch) 	as Logical
+	public Method FsVldCst(cCstmKey) 			as Logical
+
+EndClass
+
+/*/{Protheus.doc} New 
+    (Metodo construtor da classe LibPyli)
+    @author Jose Gavetti
+    @since 30/05/2025
+    @version 1.0
+    @return Self, Object, Objeto da Classe
+/*/
+Method New() as object class LibPyli
+	if ::AmbienteAtivo()
+		::cErro      := ''//INICIALIZA AS VARIAVEIS DA CLASSE
+	Endif
+Return Self
+
+
+/*/{Protheus.doc} Ambiente Ativo
+    (verifica se a chamada da classe tem um ambiente ativo, caso contrario, retorna erro para que não gere error.log)
+    @author Jose Gavetti
+    @since 30/05/2025
+    @version 1.0
+    @return Self, Object, Objeto da Classe
+/*/
+Method AmbienteAtivo() as Logical class LibPyli
+	If ! ( Select( 'SM0' ) == 0 )
+		::lRetorno  := .T.
+	else
+		::lRetorno  := .F.
+		::cErro     := "Não existe ambiente ativo (aberto) para a Thread atual."
+	EndIf
+Return Self:lRetorno
+
+
+/*/{Protheus.doc} Mostra Erro
+    (Retorna o erro da execução)
+    @author Jose Gavetti
+    @since 30/05/2025
+    @version 1.0
+    @return Self, Object, Objeto da Classe
+/*/
+Method MostraErro() as Character class LibPyli
+return ::cErro
+
+Method ValidUser(Token) as Logical class LibPyli
+
+	Local cEmail as Character
+	Local lUser  as Logical
+
+	// Carrega config cTabelas do Portal
+	cPrefDef := SuperGetMv("FS_TABWEB",.T.,"PW")
+
+	DbSelectArea(cPrefDef+"0")
+	(cPrefDef+"0")->(DbSetOrder(2))
+
+	If !Empty(Token)
+		cEmail  := rc4Crypt(Token,"E1t2h3o4s5x6!@#$"+DtoS(dDatabase),.F.,.T.)
+		lUser   := (cPrefDef+"0")->(DbSeek(xFilial(cPrefDef+"0")+cEmail))
+	EndIf
+
+Return lUser
+
+
+/*/{Protheus.doc} ValidaIE
+    (Valida Inscrição Estadual de acordo com a UF informada, retornando a IE)
+    (Retorna o erro da execução)
+    @author Fernando Carvalho
+    @since 18/07/2025
+    @version 1.0
+    @return Self, Object, Objeto da Classe
+/*/
+Method ValidaIE(cInscEst, cUF) as Character class LibPyli
+
+	Local nTamPadrao := 0
+	Local cUFProc    := Upper(AllTrim(cUF))
+	Local cInscSoNum := AllTrim(cInscEst) // Função padrão do Protheus que retorna apenas os números de uma string
+
+	// Define o tamanho padrão da IE para cada estado
+	Do Case
+	Case cUFProc == "AC"
+		nTamPadrao := 13
+	Case cUFProc == "AL"
+		nTamPadrao := 9
+	Case cUFProc == "AM"
+		nTamPadrao := 9
+	Case cUFProc == "AP"
+		nTamPadrao := 9
+	Case cUFProc == "BA" // Bahia pode ter 8 (antigo) ou 9 (novo) dígitos. Validamos para o mais comum/novo.
+		nTamPadrao := 9
+	Case cUFProc == "CE"
+		nTamPadrao := 9
+	Case cUFProc == "DF"
+		nTamPadrao := 13
+	Case cUFProc == "ES"
+		nTamPadrao := 9
+	Case cUFProc == "GO"
+		nTamPadrao := 9
+	Case cUFProc == "MA"
+		nTamPadrao := 9
+	Case cUFProc == "MG"
+		nTamPadrao := 13
+	Case cUFProc == "MS"
+		nTamPadrao := 9
+	Case cUFProc == "MT"
+		nTamPadrao := 11
+	Case cUFProc == "PA"
+		nTamPadrao := 9
+	Case cUFProc == "PB"
+		nTamPadrao := 9
+	Case cUFProc == "PE"
+		nTamPadrao := 9
+	Case cUFProc == "PI"
+		nTamPadrao := 9
+	Case cUFProc == "PR"
+		nTamPadrao := 10
+	Case cUFProc == "RJ"
+		nTamPadrao := 8
+	Case cUFProc == "RN" // RN pode ter 9 (antigo) ou 10 (novo). Validamos para 10.
+		nTamPadrao := 10
+	Case cUFProc == "RO"
+		nTamPadrao := 14
+	Case cUFProc == "RR"
+		nTamPadrao := 9
+	Case cUFProc == "RS"
+		nTamPadrao := 10
+	Case cUFProc == "SC"
+		nTamPadrao := 9
+	Case cUFProc == "SE"
+		nTamPadrao := 9
+	Case cUFProc == "SP" // IE de São Paulo tem 12 dígitos. Se começar com 'P', possui 13, mas a validação numérica é sobre 12.
+		nTamPadrao := 12
+	Case cUFProc == "TO"
+		nTamPadrao := 11
+	EndCase
+
+// Se um tamanho padrão foi encontrado para a UF e a IE (só números) for menor,
+// adiciona zeros à esquerda.
+	If nTamPadrao > 0 .And. Len(cInscSoNum) > 0 .And. Len(cInscSoNum) < nTamPadrao .And. cInscSoNum != "ISENTO"
+		cInscSoNum := PadL(cInscSoNum, nTamPadrao, "0")
+	EndIf
+
+Return cInscSoNum
+
+/*/{Protheus.doc} FsEmpFil
+Efetua preparação do ambiente Protheus
+
+@param cCompany - Empresa de preparação do AMBIENTE
+@param cBranch - Filial de preparação do AMBIENTE
+
+@author  Jose Gavetti
+@since   01/08/2025
+/*/
+Method FsEmpFil(cCompany, cBranch) as Logical class LibPyli
+
+	Local lRet    := .F.
+	Local cEmpAux := ""
+	Local lGrpEmp := .T.
+	Local lCompany := .F. // Indica se a empresa já está setada
+	Local lBranch := .F. // Indica se a filial já está setada
+
+	DEFAULT cCompany := ''
+	DEFAULT cBranch  := ''
+	DEFAULT cUrlRest := ''
+
+	PUBLIC lPortalEthosx := .T.
+
+	If Type("cEmpAnt") == "C"
+		If ( Empty(cCompany) .Or. cEmpAnt == cCompany )
+			lCompany := .T.
+		EndIf
+	EndIf
+	If Type("cFilAnt") == "C"
+		If ( Empty(cBranch) .Or. cFilAnt == cBranch )
+			lBranch := .T.
+		EndIf
+	EndIf
+
+	While .T.
+
+		// Desvio Enviroiment DEFAULT(.ini)
+		If lCompany .And. lBranch
+			lRet := .T.
+			Exit
+		EndIf
+
+		// Ponto de Entrada para desvio do tratamento de GRUPO DE EMPRESAS
+		If !ExistBlock("PENVFILIAL")
+			cEmpAux := FWCompany() //Para blindagem de erros em empresas que não utilizam o formato "Grupo Empresa"
+		EndIf
+
+		If Empty(cEmpAux)
+			lGrpEmp := .F.
+		EndIf
+
+		If lGrpEmp
+			If Empty(cCompany) .Or. Empty(cBranch)
+				cCompany := U_GetEmpFil(2)[1]
+				cBranch  := U_GetEmpFil(2)[2]
+			EndIf
+		Else
+			If Empty(cCompany)
+				If Type("cEmpAnt") == "C" .And. !Empty(cEmpAnt)
+					cCompany := cEmpAnt
+				ElseIf Select("SM0") > 0 .And. !SM0->(EoF()) .And. !Empty(SM0->M0_CODIGO)
+					cCompany := SM0->M0_CODIGO
+				ElseIf !Empty(cUrlRest)
+					cCompany := SubStr(cUrlRest,At('rest',cUrlRest)+4,2)
+				Else
+					cCompany := U_GetEmpFil(2)[1]
+					If Empty(cBranch)
+						cBranch  := U_GetEmpFil(2)[2]
+					EndIf
+				EndIf
+			ElseIf Empty(cBranch)
+				cBranch  := U_GetEmpFil(2)[2]
+			EndIf
+		EndIf
+
+		RpcClearEnv()
+		RpcSetType(3)
+		lRet := RpcSetEnv(cCompany,cBranch)
+
+		Exit
+	EndDo
+
+Return lRet
+
+
+/*/{Protheus.doc} FsEmpFil
+Efetua preparação do ambiente Protheus
+
+@param cCompany - Código cliente informado via parâmetro
+
+@author  Cristian Gustavo
+@since   12/09/2025
+/*/
+Method FsVldCst(cCustomerKey) as Logical class LibPyli
+
+	Local lRet    as Logical
+
+	lRet    	:= .F.
+
+	DEFAULT cClientKey := ""
+
+	IF !Empty(cCustomerKey) .AND. Type(cCustomerKey) <> 'undefined'
+		lRet := .T.
+
+	ELSE
+		lRet := .F.
+	ENDIF
+
+Return lRet
