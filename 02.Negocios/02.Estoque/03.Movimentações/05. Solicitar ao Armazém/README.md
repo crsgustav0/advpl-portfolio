@@ -54,14 +54,5 @@ Após a inclusão é possível visualizar a legenda do registro.
 
 ---
 
-## Autor
-
-**Cristian Gustavo** | Consultor e desenvolvedor TOTVS Protheus
-
-- [LinkedIn Cristian Gustavo](https://www.linkedin.com/in/cristian-gustavo-719aa71b2/)
-- [GitHub Cristian Gustavo](https://github.com/crsgustav0)
-
----
-
     Desenvolvido e documentado por: Cristian Gustavo
     Data início: 17/11/2025
