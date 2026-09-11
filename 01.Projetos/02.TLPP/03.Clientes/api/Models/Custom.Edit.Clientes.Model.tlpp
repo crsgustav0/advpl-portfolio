@@ -1,0 +1,294 @@
+#include 'totvs.ch'
+#include 'tlpp-core.th'
+#include 'tlpp-object.th'
+
+Namespace Custom.TOTVSBot.Clients.Edit.Model
+
+Using Namespace Custom.ToolsV1
+
+/*/{Protheus.doc} EditClientesModel
+    Modelo de inclusao, alteracao e exclusao logica de clientes da SA1.
+    @type class
+    @version 12.1.2210
+    @author Cristian Gustavo
+    @since 2026-09-10
+/*/
+Class EditClientesModel
+
+    Private Data aCliente as Array
+    Private Data cMessage as Character
+    Private Data cVerb as Character
+    Private Data jErro as Json
+    Private Data lOk as Logical
+    Private Data nCode as Numeric
+    Private Data oRetorno as Object
+
+    Public Method New(cVerb as Character) as Object
+    Public Method Save(jBody as Json, nOperation as Numeric, jParams as Json) as Logical
+    Public Method Delete(jParams as Json) as Logical
+    Public Method PrepareFromPost(jBody as Json) as Variant
+    Public Method PrepareFromPut(jBody as Json, jParams as Json) as Variant
+    Public Method PrepareFromDelete(jParams as Json) as Variant
+    Public Method ExecCRMA980() as Variant
+    Public Method IsOk() as Logical
+    Public Method GetCode() as Numeric
+    Public Method GetMessage() as Json
+    Public Method GetJSONResponse() as Object
+    Public Method DeActivate() as Variant
+
+    Private Method AddField(aCli as Array, aField as Array, uValue as Variant) as Variant
+    Private Method ExistClient(cFilPesq as Character, cCodPesq as Character, cLojaPesq as Character) as Logical
+
+EndClass
+
+/*/{Protheus.doc} EditClientesModel::New
+    Inicializa o modelo de edicao.
+    @type method
+    @version 12.1.2210
+    @author Cristian Gustavo
+    @since 2026-09-10
+    @param cVerb, Character, verbo POST, PUT ou DELETE
+    @return Object, instancia do modelo
+/*/
+Method New(cVerb as Character) as Object Class EditClientesModel
+    Default cVerb := "POST"
+    Self:aCliente := {}
+    Self:cMessage := ""
+    Self:cVerb := Upper(cVerb)
+    Self:jErro := JsonObject():New()
+    Self:lOk := .T.
+    Self:nCode := 200
+    Self:oRetorno := JsonObject():New()
+Return Self
+
+Method DeActivate() Class EditClientesModel
+    Self:aCliente := {}
+    Self:oRetorno := Nil
+    Self:jErro := Nil
+    Self:cMessage := ""
+    Self:cVerb := ""
+    Self:lOk := .T.
+    Self:nCode := 200
+Return Nil
+
+Method Save(jBody as Json, nOperation as Numeric, jParams as Json) as Logical Class EditClientesModel
+    Self:cVerb := if(nOperation == 3, "POST", "PUT")
+    Self:lOk := .T.
+    if nOperation == 3
+        Self:PrepareFromPost(jBody)
+    else
+        Self:PrepareFromPut(jBody, jParams)
+    endif
+    if Self:IsOk()
+        Self:ExecCRMA980()
+    endif
+Return Self:IsOk()
+
+Method Delete(jParams as Json) as Logical Class EditClientesModel
+    Self:cVerb := "DELETE"
+    Self:PrepareFromDelete(jParams)
+    if Self:IsOk()
+        Self:ExecCRMA980()
+    endif
+Return Self:IsOk()
+
+Method PrepareFromPost(jBody as Json) Class EditClientesModel
+    Local aCli := {} as Array
+    Local aStructSA1 := FWSX3Util():GetListFieldsStruct("SA1", .F.) as Array
+    Local cCodCliente := "" as Character
+    Local nX := 0 as Numeric
+
+    if !jBody:HasProperty("A1_FILIAL")
+        Self:lOk := .F.
+        Self:cMessage := "O campo 'A1_FILIAL' é obrigatório e não foi informado."
+        Self:nCode := 400
+        Return Nil
+    endif
+
+    if jBody:HasProperty("A1_COD") .and. !Empty(jBody["A1_COD"])
+        if Self:ExistClient(jBody["A1_FILIAL"], jBody["A1_COD"], jBody["A1_LOJA"])
+            Self:lOk := .F.
+            Self:cMessage := "O cliente " + AllTrim(jBody["A1_COD"]) + AllTrim(jBody["A1_LOJA"]) + " já existe na base de dados, para a filial '" + jBody["A1_FILIAL"] + "'."
+            Self:nCode := 400
+        else
+            AAdd(aCli, {"A1_COD", AllTrim(jBody["A1_COD"]), Nil})
+        endif
+    else
+        cCodCliente := ToolsV1():GetNum("SA1", 1, "A1_COD", .T.)
+        AAdd(aCli, {"A1_COD", cCodCliente, Nil})
+    endif
+
+    if Self:IsOk()
+        AAdd(aCli, {"A1_FILIAL", AllTrim(jBody["A1_FILIAL"]), Nil})
+    endif
+
+    for nX := 1 to Len(aStructSA1)
+        if aStructSA1[nX][1] != "A1_COD" .and. aStructSA1[nX][1] != "A1_FILIAL"
+            if CpoObrigat(aStructSA1[nX][1]) .and. (!jBody:HasProperty(aStructSA1[nX][1]) .or. Empty(jBody[aStructSA1[nX][1]]))
+                Self:lOk := .F.
+                Self:cMessage := "O campo '" + aStructSA1[nX][1] + "' é obrigatório e não foi informado ou está vazio."
+                Self:nCode := 400
+                exit
+            endif
+            if jBody:HasProperty(aStructSA1[nX][1])
+                Self:AddField(aCli, aStructSA1[nX], jBody[aStructSA1[nX][1]])
+            endif
+        endif
+    next
+
+    if Self:IsOk()
+        Self:aCliente := FWVetByDic(aClone(aCli), "SA1")
+    endif
+Return Nil
+
+Method PrepareFromPut(jBody as Json, jParams as Json) Class EditClientesModel
+    Local aCli := {} as Array
+    Local aStructSA1 := FWSX3Util():GetListFieldsStruct("SA1", .F.) as Array
+    Local nX := 0 as Numeric
+
+    if !jParams:HasProperty("A1_FILIAL") .or. !jParams:HasProperty("A1_COD") .or. Empty(AllTrim(CValToChar(jParams["A1_COD"]))) .or. !jParams:HasProperty("A1_LOJA") .or. Empty(AllTrim(CValToChar(jParams["A1_LOJA"])))
+        Self:lOk := .F.
+        Self:cMessage := "Os parâmetros A1_FILIAL, A1_COD e A1_LOJA são obrigatórios; para registros legados, A1_FILIAL pode ser enviado vazio de forma explícita."
+        Self:nCode := 400
+        Return Nil
+    endif
+
+    if !Self:ExistClient(jParams["A1_FILIAL"], jParams["A1_COD"], jParams["A1_LOJA"])
+        Self:lOk := .F.
+        Self:cMessage := "O cliente não existe na base de dados para a filial informada."
+        Self:nCode := 404
+    else
+        AAdd(aCli, {"A1_FILIAL", AllTrim(jParams["A1_FILIAL"]), Nil})
+        AAdd(aCli, {"A1_COD", AllTrim(jParams["A1_COD"]), Nil})
+        AAdd(aCli, {"A1_LOJA", AllTrim(jParams["A1_LOJA"]), Nil})
+    endif
+
+    if Self:IsOk()
+        for nX := 1 to Len(aStructSA1)
+            if aStructSA1[nX][1] != "A1_COD" .and. aStructSA1[nX][1] != "A1_FILIAL" .and. aStructSA1[nX][1] != "A1_LOJA"
+                if CpoObrigat(aStructSA1[nX][1]) .and. (!jBody:HasProperty(aStructSA1[nX][1]) .or. Empty(jBody[aStructSA1[nX][1]]))
+                    Self:lOk := .F.
+                    Self:cMessage := "O campo '" + aStructSA1[nX][1] + "' é obrigatório e não foi informado ou está vazio."
+                    Self:nCode := 400
+                    exit
+                endif
+                if jBody:HasProperty(aStructSA1[nX][1])
+                    Self:AddField(aCli, aStructSA1[nX], jBody[aStructSA1[nX][1]])
+                endif
+            endif
+        next
+    endif
+
+    if Self:IsOk()
+        Self:aCliente := FWVetByDic(aClone(aCli), "SA1")
+    endif
+Return Nil
+
+Method PrepareFromDelete(jParams as Json) Class EditClientesModel
+    if !jParams:HasProperty("A1_FILIAL") .or. !jParams:HasProperty("A1_COD") .or. Empty(AllTrim(CValToChar(jParams["A1_COD"]))) .or. !jParams:HasProperty("A1_LOJA") .or. Empty(AllTrim(CValToChar(jParams["A1_LOJA"])))
+        Self:lOk := .F.
+        Self:cMessage := "Os parâmetros A1_FILIAL, A1_COD e A1_LOJA são obrigatórios; para registros legados, A1_FILIAL pode ser enviado vazio de forma explícita."
+        Self:nCode := 400
+    elseif !Self:ExistClient(AllTrim(CValToChar(jParams["A1_FILIAL"])), AllTrim(CValToChar(jParams["A1_COD"])), AllTrim(CValToChar(jParams["A1_LOJA"])))
+        Self:lOk := .F.
+        Self:cMessage := "O cliente não existe na base de dados para a filial informada."
+        Self:nCode := 404
+    else
+        Self:aCliente := {{"A1_FILIAL", AllTrim(CValToChar(jParams["A1_FILIAL"])), Nil}, {"A1_COD", AllTrim(CValToChar(jParams["A1_COD"])), Nil}, {"A1_LOJA", AllTrim(CValToChar(jParams["A1_LOJA"])), Nil}}
+    endif
+Return Nil
+
+Method AddField(aCli as Array, aField as Array, uValue as Variant) Class EditClientesModel
+    Local cType := aField[2]
+    Local lValue := .F.
+    do case
+    case cType == "C"
+        AAdd(aCli, {aField[1], CValToChar(uValue), Nil})
+    case cType == "N"
+        AAdd(aCli, {aField[1], Val(uValue), Nil})
+    case cType == "D"
+        AAdd(aCli, {aField[1], StoD(SubStr(uValue, 1, 4) + SubStr(uValue, 6, 2) + SubStr(uValue, 9, 2)), Nil})
+    case cType == "L"
+        if Lower(CValToChar(uValue)) == "true" .or. Lower(CValToChar(uValue)) == "t"
+            lValue := .T.
+        elseif Lower(CValToChar(uValue)) == "false" .or. Lower(CValToChar(uValue)) == "f"
+            lValue := .F.
+        else
+            Self:lOk := .F.
+            Self:cMessage := "O campo '" + aField[1] + "' é do tipo lógico, e não foi informado corretamente."
+            Self:nCode := 400
+        endif
+        if Self:IsOk()
+            AAdd(aCli, {aField[1], lValue, Nil})
+        endif
+    endcase
+Return Nil
+
+Method ExistClient(cFilPesq as Character, cCodPesq as Character, cLojaPesq as Character) as Logical Class EditClientesModel
+    Local cAlias := "" as Character
+    Local cQuery := "" as Character
+    Local lFound := .F. as Logical
+    Local oExec := Nil as Object
+
+    cQuery := "SELECT A1_LOJA, A1_COD FROM " + RetSqlName("SA1") + " SA1 "
+    cQuery += "WHERE SA1.A1_FILIAL = ? AND SA1.A1_COD = ? AND SA1.A1_LOJA = ? AND SA1.D_E_L_E_T_ = ?"
+    oExec := FwExecStatement():New(cQuery)
+    oExec:SetString(1, AllTrim(CValToChar(cFilPesq)))
+    oExec:SetString(2, AllTrim(CValToChar(cCodPesq)))
+    oExec:SetString(3, AllTrim(CValToChar(cLojaPesq)))
+    oExec:SetString(4, " ")
+    cAlias := oExec:OpenAlias()
+    dbSelectArea(cAlias)
+    lFound := (cAlias)->(!Eof())
+    (cAlias)->(DbCloseArea())
+    oExec:Destroy()
+Return lFound
+
+Method ExecCRMA980() as Variant Class EditClientesModel
+    Local aErros := {} as Array
+    Local cErro := "" as Character
+    Local nOpc := if(Self:cVerb == "POST", 3, if(Self:cVerb == "PUT", 4, 5)) as Numeric
+    Local nX := 0 as Numeric
+    Private lAutoErrNoFile := .T.
+    Private lMsErroAuto := .F.
+
+    if Len(Self:aCliente) > 0
+        MSExecAuto({|a,b,c| CRMA980(a,b,c)}, Self:aCliente, nOpc)
+        if lMsErroAuto
+            aErros := GetAutoGRLog()
+            for nX := 1 to Len(aErros)
+                cErro += if(ValType(aErros[nX]) == "C", AllTrim(aErros[nX]), "") + CRLF
+            next
+            Self:lOk := .F.
+            Self:cMessage := "Erro ao executar CRMA980: " + cErro
+            Self:nCode := 400
+        else
+            Self:lOk := .T.
+            Self:cMessage := "CRMA980 executado com sucesso."
+            Self:nCode := 200
+        endif
+    else
+        Self:lOk := .F.
+        Self:cMessage := "Erro ao executar CRMA980: Não foi possível montar o array de dados."
+        Self:nCode := 400
+    endif
+Return Nil
+
+Method IsOk() as Logical Class EditClientesModel
+Return Self:lOk
+
+Method GetCode() as Numeric Class EditClientesModel
+Return Self:nCode
+
+Method GetMessage() as Json Class EditClientesModel
+    Self:jErro["message"] := Self:cMessage
+Return Self:jErro
+
+Method GetJSONResponse() as Object Class EditClientesModel
+    if Self:IsOk()
+        Self:oRetorno["Cliente"] := Self:aCliente
+    else
+        Self:oRetorno["message"] := Self:cMessage
+        Self:oRetorno["Cliente"] := Self:aCliente
+    endif
+Return Self:oRetorno

@@ -1,0 +1,140 @@
+#include 'totvs.ch'
+#include 'tlpp-core.th'
+#include 'tlpp-object.th'
+
+/*/{Protheus.doc} Custom.Clientes.Service
+    Business logic layer for Customer management.
+    Orchestrates calls between the Controller and the Models.
+    @author Cristian Gustavo
+    @since 2026-09-10
+/*/
+namespace Custom.TOTVSBot.Clients.Services
+
+Using Namespace Custom.TOTVSBot.Clients.List.Model
+Using Namespace Custom.TOTVSBot.Clients.Edit.Model
+
+class ClientesService
+    Public Method New() as Object
+    Public Method ListCustomers(jParams) as Json
+    Public Method CreateCustomer(jBody) as Json
+    Public Method UpdateCustomer(jBody, jParams) as Json
+    Public Method DeleteCustomer(jParams) as Json
+endclass
+
+/*/{Protheus.doc} ClientesService::New
+    Cria uma instancia do servico de clientes.
+    @type method
+    @version 12.1.2210
+    @author Cristian Gustavo
+    @since 2026-09-10
+    @return Object, instancia do servico
+/*/
+Method New() as Object Class ClientesService
+return self
+
+/*/{Protheus.doc} ClientesService::ListCustomers
+    Consulta clientes com pagina, tamanho de pagina e filtro opcional.
+    @type method
+    @version 12.1.2210
+    @author Cristian Gustavo
+    @since 2026-09-10
+    @param jParams, Json, parametros de consulta REST
+    @return Json, resultado com success, statusCode e data
+/*/
+Method ListCustomers(jParams) as Json Class ClientesService
+    local oList    := ListClientesModel():new()
+    local jResult  := jsonObject():new()
+    local aCustomers := {}
+    aCustomers := oList:GetAll(jParams)
+
+    if len(aCustomers) > 0
+        jResult["success"]      := .T.
+        jResult["statusCode"]   := 200
+        jResult["data"]         := aCustomers
+    else
+        jResult["success"]      := .F.
+        jResult["statusCode"]   := 404
+        jResult["data"]         := "No customers found"
+    endif
+return jResult
+
+/*/{Protheus.doc} ClientesService::CreateCustomer
+    Valida e inclui um cliente na tabela SA1 por meio do modelo de edicao.
+    @type method
+    @version 12.1.2210
+    @author Cristian Gustavo
+    @since 2026-09-10
+    @param jBody, Json, dados do cliente
+    @return Json, resultado da inclusao
+/*/
+Method CreateCustomer(jBody) as Json Class ClientesService
+    local oEdit    := EditClientesModel():new()
+    local jResult  := jsonObject():new()
+
+    if oEdit:Save(jBody, 3, jBody)
+        jResult["success"]      := .T.
+        jResult["statusCode"]   := 201
+        jResult["data"]         := "Customer created successfully"
+    else
+        jResult["success"]      := .F.
+        jResult["statusCode"]   := oEdit:GetCode()
+        jResult["data"]         := oEdit:GetMessage()["message"]
+    endif
+return jResult
+
+/*/{Protheus.doc} ClientesService::UpdateCustomer
+    Confere a existencia do cliente e executa sua alteracao.
+    @type method
+    @version 12.1.2210
+    @author Cristian Gustavo
+    @since 2026-09-10
+    @param jBody, Json, campos alterados
+    @param jParams, Json, chave A1_COD e A1_LOJA
+    @return Json, resultado da alteracao
+/*/
+Method UpdateCustomer(jBody, jParams) as Json Class ClientesService
+    local oList    := ListClientesModel():new()
+    local oEdit    := EditClientesModel():new()
+    local jResult  := jsonObject():new()
+
+    if oList:GetById(jParams) == nil
+        jResult["success"]      := .F.
+        jResult["statusCode"]   := 404
+        jResult["data"]         := "Customer not found"
+        return jResult
+    endif
+
+    if oEdit:Save(jBody, 4, jParams)
+        jResult["success"]      := .T.
+        jResult["statusCode"]   := 200
+        jResult["data"]         := "Customer updated successfully"
+    else
+        jResult["success"]      := .F.
+        jResult["statusCode"]   := oEdit:GetCode()
+        jResult["data"]         := oEdit:GetMessage()["message"]
+    endif
+return jResult
+
+/*/{Protheus.doc} ClientesService::DeleteCustomer
+    Executa a exclusao logica do cliente informado.
+    @type method
+    @version 12.1.2210
+    @author Cristian Gustavo
+    @since 2026-09-10
+    @param jParams, Json, chave A1_COD e A1_LOJA
+    @return Json, resultado da exclusao
+/*/
+Method DeleteCustomer(jParams) as Json Class ClientesService
+    local oEdit    := EditClientesModel():new()
+    local jResult  := jsonObject():new()
+
+    if oEdit:Delete(jParams)
+        jResult["success"]      := .T.
+        jResult["statusCode"]   := 200
+        jResult["data"]         := "Customer deleted successfully"
+    else
+        jResult["success"]      := .F.
+        jResult["statusCode"]   := oEdit:GetCode()
+        jResult["data"]         := oEdit:GetMessage()["message"]
+    endif
+return jResult

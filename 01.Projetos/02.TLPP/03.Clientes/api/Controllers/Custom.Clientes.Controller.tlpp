@@ -1,0 +1,282 @@
+#include 'totvs.ch'
+#include 'tlpp-core.th'
+#include 'tlpp-rest.th'
+#include 'tlpp-object.th'
+
+Namespace Custom.TOTVSBot.Clients.Controller
+Using Namespace Custom.TOTVSBot.Clients.Services
+
+/*/{Protheus.doc} CustomClientesController
+    REST Controller for Customer (SA1) management.
+    Class-based approach for Protheus TLPP REST.
+	@type class
+	@version 12.1.2210
+    @author Cristian Gustavo
+    @since 2026-09-10
+/*/
+Class CustomClientesController
+
+	@Get(endpoint="v1/customers", ;
+		description="Lista clientes ativos da filial atual com pagina e filtro opcional.", ;
+		title="Consulta de clientes", ;
+		params='[{"name":"A1_FILIAL","description":"Filial consultada; por padrao usa a filial ativa","in":"query","type":"character","required":false},{"name":"page","description":"Numero da pagina","in":"query","type":"integer","required":false},{"name":"pageSize","description":"Quantidade de registros por pagina","in":"query","type":"integer","required":false},{"name":"filter","description":"Filtro no formato A1_COD = codigo","in":"query","type":"character","required":false}]', ;
+		responses='[{"statusCode":200,"description":"Clientes encontrados"},{"statusCode":404,"description":"Nenhum cliente encontrado"}]')
+	Public Method GetCustomers() as Logical
+
+	@Post(endpoint="v1/customers", ;
+		description="Inclui um cliente na tabela SA1.", ;
+		title="Inclusao de cliente", ;
+		responses='[{"statusCode":201,"description":"Cliente incluido"},{"statusCode":400,"description":"Dados invalidos ou erro na inclusao"}]')
+	Public Method CreateCustomer() as Logical
+
+	@Put(endpoint="v1/customers", ;
+		description="Atualiza um cliente existente identificado por filial, codigo e loja.", ;
+		title="Alteracao de cliente", ;
+		params='[{"name":"A1_FILIAL","description":"Filial do cliente","in":"query","type":"character","required":true},{"name":"A1_COD","description":"Codigo do cliente","in":"query","type":"character","required":true},{"name":"A1_LOJA","description":"Loja do cliente","in":"query","type":"character","required":true}]', ;
+		responses='[{"statusCode":200,"description":"Cliente atualizado"},{"statusCode":404,"description":"Cliente nao encontrado"},{"statusCode":400,"description":"Dados invalidos ou erro na alteracao"}]')
+	Public Method UpdateCustomer() as Logical
+
+	@Delete(endpoint="v1/customers", ;
+		description="Executa a exclusao logica de um cliente.", ;
+		title="Exclusao de cliente", ;
+		params='[{"name":"A1_FILIAL","description":"Filial do cliente","in":"query","type":"character","required":true},{"name":"A1_COD","description":"Codigo do cliente","in":"query","type":"character","required":true},{"name":"A1_LOJA","description":"Loja do cliente","in":"query","type":"character","required":true}]', ;
+		responses='[{"statusCode":200,"description":"Cliente excluido"},{"statusCode":400,"description":"Cliente nao encontrado ou parametros invalidos"}]')
+	Public Method DeleteCustomer() as Logical
+
+	Public Method New() as Object
+
+EndClass
+
+/*/{Protheus.doc} CustomClientesController::New
+    Cria uma instancia do controller REST de clientes.
+    @type method
+    @version 12.1.2210
+    @author Cristian Gustavo
+    @since 2026-09-10
+    @return Object, instancia do controller
+/*/
+Method New() as Object Class CustomClientesController
+Return self
+
+/*/{Protheus.doc} CustomClientesController::GetCustomers
+    Lista clientes da filial ativa com paginacao e filtro opcional por codigo.
+    @type method
+    @version 12.1.2210
+    @author Cristian Gustavo
+    @since 2026-09-10
+    @return Logical, sempre .T. apos montar a resposta REST
+/*/
+Method GetCustomers() as Logical Class CustomClientesController
+	Local oService := ClientesService():New()
+	Local jParams  := oRest:GetQueryRequest()
+	Local jResult  := Nil
+
+	if !jParams:HasProperty("page")
+		jParams["page"] := 1
+	endif
+	if !jParams:HasProperty("pageSize")
+		jParams["pageSize"] := 10
+	endif
+	if !jParams:HasProperty("A1_FILIAL")
+		jParams["A1_FILIAL"] := FwXFilial("SA1")
+	endif
+
+	if !jParams:HasProperty("filter") .and. jParams:HasProperty("A1_COD")
+		jParams["filter"] := "A1_COD = '" + alltrim(jParams["A1_COD"]) + "'"
+	endif
+
+	jResult := oService:ListCustomers(jParams)
+
+	oRest:appendKeyHeaderResponse("Content-Type", "application/json")
+	if jResult["success"]
+		oRest:SetStatusCode(jResult["statusCode"])
+		oRest:SetResponse(jResult:ToJson())
+	else
+		oRest:SetStatusCode(jResult["statusCode"])
+		oRest:SetResponse(jResult:ToJson())
+	endif
+Return .T.
+
+/*/{Protheus.doc} CustomClientesController::CreateCustomer
+    Inclui um cliente usando os dados JSON recebidos no corpo da requisicao.
+    @type method
+    @version 12.1.2210
+    @author Cristian Gustavo
+    @since 2026-09-10
+    @return Logical, sempre .T. apos montar a resposta REST
+/*/
+Method CreateCustomer() as Logical Class CustomClientesController
+	Local oService := ClientesService():New()
+	Local jBody    := jsonObject():new()
+	Local jNorm    := jsonObject():new()
+	Local jResult  := Nil
+	Local cBody    := "" as Character
+	Local lParsed   := .F. as Logical
+	Local uParseResult := Nil as Variant
+	Local aKeys    := { "A1_COD", "A1_LOJA", "A1_NOME", "A1_NREDUZ", "A1_END", "A1_TIPO", "A1_EST", "A1_MUN", "A1_FILIAL" }
+	Local nX       := 0
+	Local cKey     := ""
+	Local cLowerKey := ""
+
+	cBody := oRest:GetBodyRequest()
+	if !Empty(AllTrim(cBody))
+		uParseResult := jBody:FromJson(cBody)
+		lParsed := ValType(uParseResult) == "U" .or. (ValType(uParseResult) == "L" .and. uParseResult)
+		if !lParsed
+			jBody := JsonObject():New()
+			uParseResult := jBody:FromJson(DecodeUTF8(cBody, "cp1252"))
+			lParsed := ValType(uParseResult) == "U" .or. (ValType(uParseResult) == "L" .and. uParseResult)
+		endif
+	endif
+	if !lParsed
+		oRest:SetStatusCode(400)
+		oRest:appendKeyHeaderResponse("Content-Type", "application/json")
+		oRest:SetResponse('{"success":false,"statusCode":400,"data":"Invalid request body"}')
+		Return .T.
+	endif
+
+	for nX := 1 to len(aKeys)
+		cKey := aKeys[nX]
+		cLowerKey := lower(cKey)
+		if jBody:HasProperty(cLowerKey)
+			jNorm[cKey] := jBody[cLowerKey]
+		elseif jBody:HasProperty(cKey)
+			jNorm[cKey] := jBody[cKey]
+		endif
+	next
+
+	jResult := oService:CreateCustomer(jNorm)
+
+	oRest:appendKeyHeaderResponse("Content-Type", "application/json")
+	if jResult["success"]
+		oRest:SetStatusCode(jResult["statusCode"])
+		oRest:SetResponse(jResult:ToJson())
+	else
+		oRest:SetStatusCode(jResult["statusCode"])
+		oRest:SetResponse(jResult:ToJson())
+	endif
+Return .T.
+
+/*/{Protheus.doc} CustomClientesController::UpdateCustomer
+    Atualiza um cliente identificado por A1_COD e A1_LOJA nos parametros.
+    @type method
+    @version 12.1.2210
+    @author Cristian Gustavo
+    @since 2026-09-10
+    @return Logical, sempre .T. apos montar a resposta REST
+/*/
+Method UpdateCustomer() as Logical Class CustomClientesController
+	Local oService := ClientesService():New()
+	Local jBody    := jsonObject():new()
+	Local jNorm    := jsonObject():new()
+	Local jParams  := oRest:GetQueryRequest()
+	Local jResult  := Nil
+	Local cBody    := "" as Character
+	Local lParsed   := .F. as Logical
+	Local uParseResult := Nil as Variant
+	Local aKeys    := { "A1_COD", "A1_LOJA", "A1_NOME", "A1_NREDUZ", "A1_END", "A1_TIPO", "A1_EST", "A1_MUN", "A1_FILIAL" }
+	Local nX       := 0
+	Local cKey     := ""
+	Local cLowerKey := ""
+
+	cBody := oRest:GetBodyRequest()
+	if !Empty(AllTrim(cBody))
+		uParseResult := jBody:FromJson(cBody)
+		lParsed := ValType(uParseResult) == "U" .or. (ValType(uParseResult) == "L" .and. uParseResult)
+		if !lParsed
+			jBody := JsonObject():New()
+			uParseResult := jBody:FromJson(DecodeUTF8(cBody, "cp1252"))
+			lParsed := ValType(uParseResult) == "U" .or. (ValType(uParseResult) == "L" .and. uParseResult)
+		endif
+	endif
+	if !lParsed
+		oRest:SetStatusCode(400)
+		oRest:appendKeyHeaderResponse("Content-Type", "application/json")
+		oRest:SetResponse('{"success":false,"statusCode":400,"data":"Invalid request body"}')
+		Return .T.
+	endif
+
+	for nX := 1 to len(aKeys)
+		cKey := aKeys[nX]
+		cLowerKey := lower(cKey)
+		if jBody:HasProperty(cLowerKey)
+			jNorm[cKey] := jBody[cLowerKey]
+		elseif jBody:HasProperty(cKey)
+			jNorm[cKey] := jBody[cKey]
+		endif
+	next
+
+	if !jParams:HasProperty("A1_FILIAL")
+		oRest:SetStatusCode(400)
+		oRest:SetResponse('{"success":false,"statusCode":400,"data":"Customer branch missing in query parameters"}')
+		Return .T.
+	endif
+	jParams["A1_FILIAL"] := AllTrim(CValToChar(jParams["A1_FILIAL"]))
+
+	if !jParams:HasProperty("A1_COD") .or. Empty(AllTrim(CValToChar(jParams["A1_COD"])))
+		oRest:SetStatusCode(400)
+		oRest:SetResponse('{"success":false,"statusCode":400,"data":"Customer code missing in query parameters"}')
+		Return .T.
+	endif
+
+	if !jParams:HasProperty("A1_LOJA") .or. Empty(AllTrim(CValToChar(jParams["A1_LOJA"])))
+		oRest:SetStatusCode(400)
+		oRest:SetResponse('{"success":false,"statusCode":400,"data":"Customer store missing in query parameters"}')
+		Return .T.
+	endif
+
+	jResult := oService:UpdateCustomer(jNorm, jParams)
+
+	oRest:appendKeyHeaderResponse("Content-Type", "application/json")
+	if jResult["success"]
+		oRest:SetStatusCode(jResult["statusCode"])
+		oRest:SetResponse(jResult:ToJson())
+	else
+		oRest:SetStatusCode(jResult["statusCode"])
+		oRest:SetResponse(jResult:ToJson())
+	endif
+Return .T.
+
+/*/{Protheus.doc} CustomClientesController::DeleteCustomer
+    Exclui um cliente identificado por A1_COD e A1_LOJA nos parametros.
+    @type method
+    @version 12.1.2210
+    @author Cristian Gustavo
+    @since 2026-09-10
+    @return Logical, sempre .T. apos montar a resposta REST
+/*/
+Method DeleteCustomer() as Logical Class CustomClientesController
+	Local oService := ClientesService():New()
+	Local jParams  := oRest:GetQueryRequest()
+	Local jResult  := Nil
+
+	if !jParams:HasProperty("A1_FILIAL")
+		oRest:SetStatusCode(400)
+		oRest:SetResponse('{"success":false,"statusCode":400,"data":"Customer branch missing in query parameters"}')
+		Return .T.
+	endif
+	jParams["A1_FILIAL"] := AllTrim(CValToChar(jParams["A1_FILIAL"]))
+
+	if !jParams:HasProperty("A1_COD") .or. Empty(AllTrim(CValToChar(jParams["A1_COD"])))
+		oRest:SetStatusCode(400)
+		oRest:SetResponse('{"success":false,"statusCode":400,"data":"Customer code missing in query parameters"}')
+		Return .T.
+	endif
+
+	if !jParams:HasProperty("A1_LOJA") .or. Empty(AllTrim(CValToChar(jParams["A1_LOJA"])))
+		oRest:SetStatusCode(400)
+		oRest:SetResponse('{"success":false,"statusCode":400,"data":"Customer store missing in query parameters"}')
+		Return .T.
+	endif
+
+	jResult := oService:DeleteCustomer(jParams)
+
+	oRest:appendKeyHeaderResponse("Content-Type", "application/json")
+	if jResult["success"]
+		oRest:SetStatusCode(jResult["statusCode"])
+		oRest:SetResponse(jResult:ToJson())
+	else
+		oRest:SetStatusCode(jResult["statusCode"])
+		oRest:SetResponse(jResult:ToJson())
+	endif
+Return .T.

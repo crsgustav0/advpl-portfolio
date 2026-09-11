@@ -1,0 +1,21 @@
+#include 'totvs.ch'
+#include 'tlpp-core.th'
+#include 'tlpp-object.th'
+
+/*/{Protheus.doc} CustomerModel
+    Data Transfer Object (DTO) for Customer (SA1)
+    @author Cristian Gustavo
+    @since 2026-09-09
+/*/
+namespace Custom.TOTVSBot.Clients
+
+class CustomerModel
+    public data A1_COD    as character
+    public data A1_LOJA   as character
+    public data A1_NOME   as character
+    public data A1_NREDUZ as character
+    public data A1_END    as character
+    public data A1_TIPO   as character
+    public data A1_EST    as character
+    public data A1_MUN    as character
+endclass
