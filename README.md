@@ -1,8 +1,8 @@
-# Portfólio de Desenvolvimento Protheus – Cristian Gustavo
+# Portfï¿½lio de Desenvolvimento Protheus ï¿½ Cristian Gustavo
 
-Este repositório reúne projetos, códigos de estudo e boas práticas voltadas ao desenvolvimento na plataforma **TOTVS Protheus**, utilizando as principais tecnologias e padrões adotados no ecossistema TOTVS:
+Este repositï¿½rio reï¿½ne projetos, cï¿½digos de estudo e boas prï¿½ticas voltadas ao desenvolvimento na plataforma **TOTVS Protheus**, utilizando as principais tecnologias e padrï¿½es adotados no ecossistema TOTVS:
 
-- **ADVPL** (linguagem proprietária)
+- **ADVPL** (linguagem proprietï¿½ria)
 - **TLPP** (Totvs Language Pre-Processor)
 - **MVC (Model-View-Controller)**
 - **PO UI (Portinari UI - Angular)**
@@ -11,17 +11,17 @@ Este repositório reúne projetos, códigos de estudo e boas práticas voltadas ao d
 
 ## Objetivo
 
-Consolidar meu aprendizado prático e compartilhar soluções aplicáveis ao cotidiano de consultoria, personalizações e integrações no ambiente Protheus, com foco em:
+Consolidar meu aprendizado prï¿½tico e compartilhar soluï¿½ï¿½es aplicï¿½veis ao cotidiano de consultoria, personalizaï¿½ï¿½es e integraï¿½ï¿½es no ambiente Protheus, com foco em:
 
-- Automação de rotinas empresariais
-- Geração de relatórios e dashboards
-- Integrações via REST/SOAP
+- Automaï¿½ï¿½o de rotinas empresariais
+- Geraï¿½ï¿½o de relatï¿½rios e dashboards
+- Integraï¿½ï¿½es via REST/SOAP
 - Desenvolvimento de rotinas MVC e interfaces com PO UI
-- Otimizações via SQL Server (T-SQL com MSExecSQL)
+- Otimizaï¿½ï¿½es via SQL Server (T-SQL com MSExecSQL)
 
 ---
 
-## Estrutura do Repositório
+## Estrutura do Repositï¿½rio
 
     protheus-dev-portfolio/
     Projetos
@@ -54,14 +54,27 @@ Consolidar meu aprendizado prático e compartilhar soluções aplicáveis ao cotidia
 
 ---
 
+## Nova inclusÃ£o em destaque
+
+A estrutura do portfÃ³lio foi ampliada com o mÃ³dulo de clientes em TLPP, que representa uma implementaÃ§Ã£o prÃ¡tica de Web Service REST no Protheus para manipulaÃ§Ã£o da tabela SA1. Esse novo fonte reforÃ§a o alinhamento entre:
+
+- TLPP como linguagem de customizaÃ§Ã£o
+- arquitetura MVC aplicada em camadas
+- leitura otimizada via SQL embutido
+- manutenÃ§Ã£o de dados com validaÃ§Ã£o nativa do Protheus (`CRMA980`)
+- exposiÃ§Ã£o de endpoints REST para consumo por aplicaÃ§Ãµes externas
+
+Esse mÃ³dulo passa a compor o conjunto de estudos e soluÃ§Ãµes do portfÃ³lio como referÃªncia de integraÃ§Ã£o e integraÃ§Ã£o de cadastro de clientes.
+
 ## Projetos em Destaque
 
-| Projeto               | Tecnologias     | Descrição                                               |
-| --------------------- | --------------- | ------------------------------------------------------- |
-| `u_crud_produtos.prw` | ADVPL + SQL     | CRUD completo na SB1 com validação                      |
-| `pedidos_venda.prw`   | ADVPL + SC5/SC6 | Simulação de pedido com itens, impostos e totalizadores |
-| `requisicao-compra`   | PO UI + Angular | Front-end SPA integrado com serviço Protheus REST       |
-| `MATA951`             | MVC             | Customização nativa com uso de FWMVC e ModelCallback    |
+| Projeto                       | Tecnologias                 | DescriÃ§Ã£o                                                                  |
+| ----------------------------- | -------------------------- | -------------------------------------------------------------------------- |
+| `WS TLPP Clientes (SA1)`      | TLPP + REST + MVC          | Web Service para consulta, inclusÃ£o, alteraÃ§Ã£o e exclusÃ£o lÃ³gica de clientes |
+| `u_crud_produtos.prw`         | ADVPL + SQL                | CRUD completo na SB1 com validaÃ§Ã£o                                         |
+| `pedidos_venda.prw`           | ADVPL + SC5/SC6            | SimulaÃ§Ã£o de pedido com itens, impostos e totalizadores                    |
+| `requisicao-compra`           | PO UI + Angular            | Front-end SPA integrado com serviÃ§o Protheus REST                          |
+| `MATA951`                     | MVC                        | CustomizaÃ§Ã£o nativa com uso de FWMVC e ModelCallback                       |
 
 ---
 
@@ -86,4 +99,4 @@ Consolidar meu aprendizado prático e compartilhar soluções aplicáveis ao cotidia
 ---
 
     Desenvolvido e documentado por: Cristian Gustavo
-    Data início: 25/06/2025
+    Data inï¿½cio: 25/06/2025

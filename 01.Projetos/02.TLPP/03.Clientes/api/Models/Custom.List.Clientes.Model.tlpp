@@ -1,0 +1,313 @@
+#include 'tlpp-core.th'
+#include 'tlpp-object.th'
+
+Namespace Custom.TOTVSBot.Clients.List.Model
+
+/*/{Protheus.doc} ListClientesModel
+	Adapter de leitura da tabela SA1 usando FWAdapterBaseV2.
+	@type class
+	@version 12.1.2210
+	@author Cristian Gustavo
+	@since 2026-09-10
+/*/
+Class ListClientesModel From FWAdapterBaseV2
+
+	Private Data cVerb as Character
+
+	Public Method New(cVerb as Character) as Object
+	Public Method GetListClients() as Variant
+	Public Method PrepareFromQueryParams(jParams as Json) as Variant
+	Public Method IsOk() as Logical
+	Public Method GetById(jParams as Json) as Variant
+	Public Method GetAll(jParams as Json) as Variant
+
+	Private Method BuildMapFields() as Variant
+	Private Method GetAndSetQuery() as Variant
+	Private Method GetCustomerFromArea(cAlias as Character) as Json
+
+EndClass
+
+/*/{Protheus.doc} ListClientesModel::New
+	Inicializa o adapter de listagem para o verbo GET.
+	@type method
+	@version 12.1.2210
+	@author Cristian Gustavo
+	@since 2026-09-10
+	@param cVerb, Character, verbo HTTP utilizado pelo adapter
+	@return Object, instancia do modelo de listagem
+/*/
+Method New(cVerb as Character) as Object Class ListClientesModel
+	Default cVerb := "GET"
+	Self:cVerb := cVerb
+	_Super:New(cVerb)
+Return Self
+
+/*/{Protheus.doc} ListClientesModel::GetListClients
+	Executa a consulta do FWAdapterBaseV2 e preenche sua resposta interna.
+	@type method
+	@version 12.1.2210
+	@author Cristian Gustavo
+	@since 2026-09-10
+	@return Variant, sem retorno; os dados ficam na resposta do adapter
+/*/
+Method GetListClients() as Variant Class ListClientesModel
+	Local cWhere := " SA1.A1_FILIAL = '" + FwXFilial("SA1") + "' " as Character
+
+	Self:BuildMapFields()
+	Self:GetAndSetQuery()
+	cWhere += "AND SA1.D_E_L_E_T_ = ' ' "
+	Self:SetWhere(cWhere)
+	Self:SetOrder("A1_COD")
+
+	if Self:Execute()
+		Self:FillGetResponse()
+	endif
+Return Nil
+
+/*/{Protheus.doc} ListClientesModel::PrepareFromQueryParams
+	Transforma parametros REST em campos, filtros, ordenacao e pagina.
+	@type method
+	@version 12.1.2210
+	@author Cristian Gustavo
+	@since 2026-09-10
+	@param jParams, Json, parametros da consulta
+	@return Variant, sem retorno
+/*/
+Method PrepareFromQueryParams(jParams as Json) as Variant Class ListClientesModel
+	Local nX := 0 as Numeric
+	Local aFilters := {} as Array
+	Local aUrlFilter := {} as Array
+
+	if jParams:HasProperty("fields")
+		Self:SetFields(jParams["fields"])
+	endif
+	if jParams:HasProperty("filter")
+		aFilters := StrTokArr(jParams["filter"], ",")
+		for nX := 1 to Len(aFilters)
+			AAdd(aUrlFilter, {"FILTER", aFilters[nX]})
+		next
+		Self:SetUrlFilter(aUrlFilter)
+	endif
+	if jParams:HasProperty("order")
+		Self:SetOrderQuery(jParams["order"])
+	endif
+	if jParams:HasProperty("page")
+		Self:SetPage(jParams["page"])
+	endif
+	if jParams:HasProperty("pageSize")
+		Self:SetPageSize(jParams["pageSize"])
+	endif
+Return Nil
+
+/*/{Protheus.doc} ListClientesModel::BuildMapFields
+	Mapeia dinamicamente os campos da SA1 no adapter.
+	@type method
+	@version 12.1.2210
+	@author Cristian Gustavo
+	@since 2026-09-10
+	@return Variant, sem retorno
+/*/
+Method BuildMapFields() as Variant Class ListClientesModel
+	Local aStructSx3 := FWSX3Util():GetListFieldsStruct("SA1", .F.) as Array
+	Local nX := 0 as Numeric
+
+	for nX := 1 to Len(aStructSx3)
+		Self:AddMapFields(aStructSx3[nX][1], aStructSx3[nX][1], .T., .F., aStructSx3[nX], aStructSx3[nX][1])
+	next
+Return Nil
+
+/*/{Protheus.doc} ListClientesModel::GetAndSetQuery
+	Define a consulta Embedded SQL usada pelo FWAdapterBaseV2.
+	@type method
+	@version 12.1.2210
+	@author Cristian Gustavo
+	@since 2026-09-10
+	@return Variant, sem retorno
+/*/
+Method GetAndSetQuery() as Variant Class ListClientesModel
+	Local cQuery := "SELECT #QueryFields# FROM " + RetSqlName("SA1") + " SA1 WHERE #QueryWhere#" as Character
+	Self:SetQuery(cQuery)
+Return Nil
+
+/*/{Protheus.doc} ListClientesModel::IsOk
+	Retorna o estado de validacao do adapter.
+	@type method
+	@version 12.1.2210
+	@author Cristian Gustavo
+	@since 2026-09-10
+	@return Logical, estado da operacao
+/*/
+Method IsOk() as Logical Class ListClientesModel
+Return Self:lOk
+
+/*/{Protheus.doc} ListClientesModel::GetById
+	Consulta um cliente por codigo, loja e filial informados.
+	Este metodo e usado pelo PUT para validar a existencia do registro.
+	@type method
+	@version 12.1.2210
+	@author Cristian Gustavo
+	@since 2026-09-10
+	@param jParams, Json, parametros A1_FILIAL, A1_COD e A1_LOJA
+	@return Variant, Json do cliente ou Nil quando nao encontrado
+/*/
+Method GetById(jParams as Json) as Variant Class ListClientesModel
+	Local cAlias as Character
+	Local oCust as Json
+	Local cCode as Character
+	Local cLoja as Character
+	Local cBranch as Character
+
+	cAlias := GetNextAlias()
+	oCust := Nil
+	cCode := AllTrim(CValToChar(jParams["A1_COD"]))
+	cLoja := AllTrim(CValToChar(jParams["A1_LOJA"]))
+	cBranch := AllTrim(CValToChar(jParams["A1_FILIAL"]))
+
+	BeginSql Alias cAlias
+        SELECT SA1.A1_COD, SA1.A1_FILIAL, SA1.A1_LOJA, SA1.A1_NOME, SA1.A1_NREDUZ, SA1.A1_END, SA1.A1_TIPO, SA1.A1_EST, SA1.A1_MUN
+        FROM %Table:SA1% AS SA1
+        WHERE SA1.A1_COD = %Exp:cCode%
+          AND SA1.A1_LOJA = %Exp:cLoja%
+					AND SA1.A1_FILIAL = %Exp:cBranch%
+          AND SA1.%NotDel%
+	EndSql
+
+	if (cAlias)->(!Eof())
+		oCust := Self:GetCustomerFromArea(cAlias)
+	endif
+	(cAlias)->(DbCloseArea())
+Return oCust
+
+/*/{Protheus.doc} ListClientesModel::GetAll
+	Consulta clientes ativos da filial informada com paginacao e filtro seguro por A1_COD.
+	@type method
+	@version 12.1.2210
+	@author Cristian Gustavo
+	@since 2026-09-10
+	@param jParams, Json, parametros de pagina, filtro e A1_FILIAL
+	@return Variant, array de objetos Json
+/*/
+Method GetAll(jParams as Json) as Variant Class ListClientesModel
+	Local cAlias as Character
+	Local aResults as Array
+	Local nPage as Numeric
+	Local nPageSize as Numeric
+	Local cFilter as Character
+	Local cBranch as Character
+	Local cCode as Character
+	Local cFilterValue as Character
+	Local lFilterByCode as Logical
+	Local lInvalidFilter as Logical
+	Local nStart as Numeric
+	Local nCount as Numeric
+	Local nI as Numeric
+
+	cAlias := GetNextAlias()
+	aResults := {}
+	nPage := 1
+	nPageSize := 10
+	cFilter := ""
+	cBranch := ""
+	cCode := ""
+	cFilterValue := ""
+	lFilterByCode := .F.
+	lInvalidFilter := .F.
+	nStart := 0
+	nCount := 0
+	nI := 0
+
+	if jParams:HasProperty("page")
+		nPage := jParams["page"]
+	endif
+	if jParams:HasProperty("pageSize")
+		nPageSize := jParams["pageSize"]
+	endif
+	if jParams:HasProperty("filter")
+		cFilter := jParams["filter"]
+	endif
+	if jParams:HasProperty("A1_FILIAL")
+		cBranch := AllTrim(CValToChar(jParams["A1_FILIAL"]))
+	else
+		cBranch := FwXFilial("SA1")
+	endif
+	if Empty(cBranch) .and. !jParams:HasProperty("A1_FILIAL")
+		cBranch := FwXFilial("SA1")
+	endif
+	cFilterValue := AllTrim(cFilter)
+	nStart := (nPage - 1) * nPageSize
+
+	if !Empty(cFilterValue)
+		if Upper(Left(cFilterValue, 8)) == "A1_COD ="
+			cCode := AllTrim(SubStr(cFilterValue, 9))
+			if Len(cCode) >= 2 .and. Left(cCode, 1) == "'" .and. Right(cCode, 1) == "'"
+				cCode := SubStr(cCode, 2, Len(cCode) - 2)
+				lFilterByCode := .T.
+			else
+				lInvalidFilter := .T.
+			endif
+		else
+			lInvalidFilter := .T.
+		endif
+	endif
+
+	if lInvalidFilter
+		Return aResults
+	endif
+
+	if lFilterByCode
+		BeginSql Alias cAlias
+			SELECT SA1.A1_COD, SA1.A1_FILIAL, SA1.A1_LOJA, SA1.A1_NOME, SA1.A1_NREDUZ, SA1.A1_END, SA1.A1_TIPO, SA1.A1_EST, SA1.A1_MUN
+			FROM %Table:SA1% AS SA1
+			WHERE SA1.A1_COD = %Exp:cCode%
+			  AND SA1.A1_FILIAL = %Exp:cBranch%
+			  AND SA1.%NotDel%
+			ORDER BY SA1.A1_FILIAL, SA1.A1_COD, SA1.A1_LOJA, SA1.A1_NOME
+		EndSql
+	else
+		BeginSql Alias cAlias
+			SELECT SA1.A1_COD, SA1.A1_FILIAL, SA1.A1_LOJA, SA1.A1_NOME, SA1.A1_NREDUZ, SA1.A1_END, SA1.A1_TIPO, SA1.A1_EST, SA1.A1_MUN
+			FROM %Table:SA1% AS SA1
+			WHERE SA1.A1_FILIAL = %Exp:cBranch%
+			  AND SA1.%NotDel%
+			ORDER BY SA1.A1_FILIAL, SA1.A1_COD, SA1.A1_LOJA, SA1.A1_NOME
+		EndSql
+	endif
+
+	(cAlias)->(DbGoTop())
+	for nI := 1 to nStart
+		if (cAlias)->(Eof())
+			exit
+		endif
+		(cAlias)->(DbSkip())
+	next
+
+	while !(cAlias)->(Eof()) .and. nCount < nPageSize
+		AAdd(aResults, Self:GetCustomerFromArea(cAlias))
+		nCount++
+		(cAlias)->(DbSkip())
+	end while
+	(cAlias)->(DbCloseArea())
+Return aResults
+
+/*/{Protheus.doc} ListClientesModel::GetCustomerFromArea
+	Converte o registro atual da area SQL em um objeto JSON.
+	@type method
+	@version 12.1.2210
+	@author Cristian Gustavo
+	@since 2026-09-10
+	@param cAlias, Character, alias da consulta aberta
+	@return Json, cliente convertido para resposta REST
+/*/
+Method GetCustomerFromArea(cAlias as Character) as Json Class ListClientesModel
+	Local oCust := JsonObject():New() as Json
+
+	oCust["A1_FILIAL"]  := AllTrim((cAlias)->A1_FILIAL)
+	oCust["A1_COD"]     := AllTrim((cAlias)->A1_COD)
+	oCust["A1_LOJA"]    := AllTrim((cAlias)->A1_LOJA)
+	oCust["A1_NOME"]    := AllTrim((cAlias)->A1_NOME)
+	oCust["A1_NREDUZ"]  := AllTrim((cAlias)->A1_NREDUZ)
+	oCust["A1_END"]     := AllTrim((cAlias)->A1_END)
+	oCust["A1_TIPO"]    := AllTrim((cAlias)->A1_TIPO)
+	oCust["A1_EST"]     := AllTrim((cAlias)->A1_EST)
+	oCust["A1_MUN"]     := AllTrim((cAlias)->A1_MUN)
+Return oCust
